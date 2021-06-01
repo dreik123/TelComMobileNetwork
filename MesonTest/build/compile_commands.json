@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "/home/andrey/Рабочий стол/1/MesonTest/build",
+    "command": "c++  -Isource/libwrapper@sta -Isource -I../source -I../source/../api -I../source/../headers -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -std=c++14 -O0 -g -fPIC -MD -MQ 'source/libwrapper@sta/Wrapper.cpp.o' -MF 'source/libwrapper@sta/Wrapper.cpp.o.d' -o 'source/libwrapper@sta/Wrapper.cpp.o' -c ../source/Wrapper.cpp",
+    "file": "../source/Wrapper.cpp"
+  },
+  {
+    "directory": "/home/andrey/Рабочий стол/1/MesonTest/build",
+    "command": "c++  -Iwrapper@exe -I. -I.. -I../source/../api -I../source/../headers -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -std=c++14 -O0 -g -MD -MQ 'wrapper@exe/main.cpp.o' -MF 'wrapper@exe/main.cpp.o.d' -o 'wrapper@exe/main.cpp.o' -c ../main.cpp",
+    "file": "../main.cpp"
+  }
+]

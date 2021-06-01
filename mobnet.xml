@@ -1,0 +1,22 @@
+<edit-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:xc="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <target>
+    <running/>
+  </target>
+  <error-option>rollback-on-error</error-option>
+  <config>
+   <users xmlns="tieto">
+     <subscriber>
+       <number>+380643212341</number>
+       <userName>Petra</userName>
+       <incomingNumber>+380967821354</incomingNumber>
+       <state>hangUp</state>
+     </subscriber>
+          <subscriber>
+       <number>+380633212341</number>
+       <userName>Andrii</userName>
+       <incomingNumber>+380968821354</incomingNumber>
+       <state>hangUp</state>
+     </subscriber>
+   </users>
+  </config>
+</edit-config>
