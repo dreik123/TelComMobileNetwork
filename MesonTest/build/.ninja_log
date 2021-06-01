@@ -1,5 +1,0 @@
-# ninja log v5
-0	898	1621516057	source/libwrapper@sta/Wrapper.cpp.o	4f30226a43def8d9
-898	921	1621516057	source/liblibwrapper.a	ae6734d9971df053
-0	1124	1621516057	wrapper@exe/main.cpp.o	ab482a5967f98e8b
-1125	1243	1621516057	wrapper	9eeb800a5a57643d
