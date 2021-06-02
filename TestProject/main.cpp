@@ -2,11 +2,16 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <regex>
 bool isFind(std::string str, std::string command)
 {
     return str == command;
 }
-
+bool isRightNumber(std::string number)
+{
+    auto regex = std::regex("^\\+380[0-9]{9}$");
+    return std::regex_match(number, regex);
+}
 int main()
 {
     
@@ -30,7 +35,15 @@ int main()
         {
             if(commandArgs.size() > 1)
             {
-                std::cout << "registered" << std::endl;
+                if(isRightNumber(commandArgs.at(1)))
+                {
+                    std::cout << "registered" << std::endl;
+                }
+                else
+                {
+                    std::cout << "Invalid number. Example: +380435676789" << std::endl;
+                }
+                
             }
             else
             {
@@ -56,7 +69,14 @@ int main()
         {
             if(commandArgs.size() > 1)
             {
-                std::cout << "calling" << std::endl;
+                if(isRightNumber(commandArgs.at(1)))
+                {
+                    std::cout << "calling" << std::endl;
+                }
+                else
+                {
+                    std::cout << "Invalid number. Example: +380435676789" << std::endl;
+                }
             }
             else
             {
