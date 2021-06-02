@@ -1,4 +1,4 @@
-module mobile_network {
+module mobile-network {
     namespace "tieto";
 
     prefix mone;
@@ -12,23 +12,19 @@ module mobile_network {
                 "namespace is urn for Ukraine";
     }
 
-    grouping user {
-        leaf number {
-            type mobileNumber;
-        }
-            
-        leaf userName {
-            type string;
-        }
-    }
-
     container users  {
         list subscriber {
             key "number";
 
             description "Info about call initialization with subscriber";
 
-            uses user;
+            leaf number {
+                type mobileNumber;
+            }
+            
+            leaf userName {
+                type string;
+            }
 
             leaf incomingNumber {
                 type mobileNumber;
@@ -37,16 +33,16 @@ module mobile_network {
 
             leaf state {
                 config true;
+                mandatory true;
                 type enumeration {
                     enum busy {
-                        value 1;
-                        description
-                              "Subscriber is busy";
+                        description "Subscriber is busy";
                     }
-                    enum hangUp {
-                        value 2;
-                        description
-                          "Subsriber can't accept";
+                    enum active {
+                        description "Subsriber is active";
+                    }
+                    enum idle {
+                        description "Subscriber is idle";
                     }
                 }
             }
