@@ -14,7 +14,6 @@ bool isRightNumber(std::string number)
 }
 int main()
 {
-    
     while(true)
     {
         std::vector<std::string> commandArgs;
