@@ -17,12 +17,6 @@ bool isRightNumber(std::string number)
 }
 int main()
 {
-    //DEBUG
-    NetConfAgent agent = NetConfAgent();
-    agent.initSysrepo();
-    agent.closeSysrepo();
-    std::cout << "end DEBUG" << std::endl;
-    //DEBUG
     while(true)
     {
         std::vector<std::string> commandArgs;

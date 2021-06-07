@@ -1,5 +1,7 @@
 #include "NetConfAgent.hpp"
 #include <iostream>
+using std::cout;
+using std::endl;
 bool NetConfAgent::initSysrepo()
 {
     conn = std::make_unique<sysrepo::Connection>();
@@ -15,7 +17,7 @@ bool NetConfAgent::closeSysrepo()
     return true;
 }
 
-bool NetConfAgent::fetchData(std::string xpath)
+bool NetConfAgent::fetchData(const std::string& xpath)
 {
     libyang::S_Data_Node data = sess->get_data(xpath.c_str());
 
@@ -29,7 +31,7 @@ bool NetConfAgent::fetchData(std::string xpath)
     return true;
 }
 
-bool NetConfAgent::subscribeForModelChanges(std::string module)
+bool NetConfAgent::subscribeForModelChanges(const std::string& module)
 {
     auto cb = [] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
             uint32_t request_id) {
@@ -40,21 +42,21 @@ bool NetConfAgent::subscribeForModelChanges(std::string module)
     return true;
 }
 
-bool NetConfAgent::registerOperData(std::string module, std::string xpath)
+bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath)
 {
-            auto cb1 = [] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
+            auto cb = [] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
             uint32_t request_id, libyang::S_Data_Node &parent) {
 
             cout << "\n\n ========== CALLBACK CALLED TO PROVIDE \"" << path << "\" DATA ==========\n" << endl;
 
             return SR_ERR_OK;
         };
-    subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath->c_str());
+    subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath.c_str());
     return true;
 }
 
 
-bool NetConfAgent::subscribeForRpc(std::string xpath)
+bool NetConfAgent::subscribeForRpc(const std::string& xpath)
 {
     std::cout << "Subscribe for rpc" << std::endl;
     auto cbVals = [](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) {
@@ -65,25 +67,25 @@ bool NetConfAgent::subscribeForRpc(std::string xpath)
     return true;
 }
 
-bool NetConfAgent::notifySysrepo(std::string module)
+bool NetConfAgent::notifySysrepo(const std::string& module)
 {
     auto cbVals = [] (sysrepo::S_Session session, const sr_ev_notif_type_t notif_type, const char *path,
         const sysrepo::S_Vals vals, time_t timestamp) {
         cout << "\n ========== NOTIF RECEIVED ==========\n" << endl;
     };
-    subscribe->event_notif_subscribe(module, cbVals);
+    subscribe->event_notif_subscribe(module.c_str(), cbVals);
     return true;
 }
 
-bool NetConfAgent::changeData(std::string xpath, std::map<std::string, std::string> values)
+bool NetConfAgent::changeData(const std::string& xpath, std::map<std::string, std::string> values)
 {
     auto input = std::make_shared<sysrepo::Vals>(values.size());
     int count  = 0;
     for(auto &c : values)
     {
-        std::string fullXpath = xpath + "/" + c.get_key();
-        std::cout << fulXpath << std::endl;
-        input->val(count)->set(fullXpath.c_str(), c.get_value().c_str());
+        std::string fullXpath = xpath + "/" + c.first;
+        std::cout << fullXpath << std::endl;
+        input->val(count)->set(fullXpath.c_str(), c.second.c_str());
         ++count;
     }
     sess->rpc_send(xpath.c_str(), input);

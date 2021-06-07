@@ -13,7 +13,7 @@ public:
     bool registerOperData(const std::string& module, const std::string& xpath);
     bool subscribeForRpc(const std::string& xpath);
     bool notifySysrepo(const std::string& module);
-    bool changeData(const std::string& xpath, std::vector<std::string> values);
+    bool changeData(const std::string& xpath, std::map<std::string, std::string> values);
 private:
     std::unique_ptr<sysrepo::Session> sess;
     std::unique_ptr<sysrepo::Connection> conn;
