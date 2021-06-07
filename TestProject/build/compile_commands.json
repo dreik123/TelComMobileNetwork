@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "/home/andrey/Desktop/1/TestProject/build",
+    "command": "c++  -Isrc/libcustom@sta -Isrc -I../src -I../src/../include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -Wextra -Wpedantic -std=c++17 -O0 -g -fPIC -MD -MQ 'src/libcustom@sta/NetConfAgent.cpp.o' -MF 'src/libcustom@sta/NetConfAgent.cpp.o.d' -o 'src/libcustom@sta/NetConfAgent.cpp.o' -c ../src/NetConfAgent.cpp",
+    "file": "../src/NetConfAgent.cpp"
+  },
+  {
+    "directory": "/home/andrey/Desktop/1/TestProject/build",
+    "command": "c++  -IMobileNetwork@exe -I. -I.. -I../src/../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -Wextra -Wpedantic -std=c++17 -O0 -g -MD -MQ 'MobileNetwork@exe/main.cpp.o' -MF 'MobileNetwork@exe/main.cpp.o.d' -o 'MobileNetwork@exe/main.cpp.o' -c ../main.cpp",
+    "file": "../main.cpp"
+  }
+]

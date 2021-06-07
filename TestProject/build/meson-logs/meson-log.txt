@@ -1,0 +1,31 @@
+Build started at 2021-06-07T01:20:22.042124
+Main binary: /usr/bin/python3
+Python system: Linux
+The Meson build system
+Version: 0.45.1
+Source dir: /home/andrey/Desktop/1/TestProject
+Build dir: /home/andrey/Desktop/1/TestProject/build
+Build type: native build
+Project name: MobileNetwork
+Sanity testing C++ compiler: c++
+Is cross compiler: False.
+Sanity check compiler command line: c++ /home/andrey/Desktop/1/TestProject/build/meson-private/sanitycheckcpp.cc -o /home/andrey/Desktop/1/TestProject/build/meson-private/sanitycheckcpp.exe
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/andrey/Desktop/1/TestProject/build/meson-private/sanitycheckcpp.exe
+Native C++ compiler: c++ (gcc 7.5.0 "c++ (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0")
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Found pkg-config: /usr/bin/pkg-config (0.29.1)
+Determining dependency 'sysrepo' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency sysrepo found: YES 1.4.122
+Determining dependency 'sysrepo-cpp' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency sysrepo-cpp found: YES 1.4.122
+Determining dependency 'libyang-cpp' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency libyang-cpp found: YES 1.0.225
+Build targets in project: 2
+Found ninja-1.8.2 at /usr/bin/ninja

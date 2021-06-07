@@ -3,6 +3,9 @@
 #include <sstream>
 #include <vector>
 #include <regex>
+#include "NetConfAgent.hpp"
+
+
 bool isFind(std::string str, std::string command)
 {
     return str == command;
@@ -14,11 +17,17 @@ bool isRightNumber(std::string number)
 }
 int main()
 {
+    //DEBUG
+    NetConfAgent agent = NetConfAgent();
+    agent.initSysrepo();
+    agent.closeSysrepo();
+    std::cout << "end DEBUG" << std::endl;
+    //DEBUG
     while(true)
     {
         std::vector<std::string> commandArgs;
         std::string command;
-        
+
         std::getline(std::cin, command);
         std::istringstream iss(command);
         std::string arg;

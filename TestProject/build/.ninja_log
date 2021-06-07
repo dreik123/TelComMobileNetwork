@@ -1,0 +1,12 @@
+# ninja log v5
+0	5209	1623018036	MobileNetwork@exe/main.cpp.o	f0fc1b407c749a6c
+1	1686	1623018068	src/libcustom@sta/NetConfAgent.cpp.o	21c62e8b0d219fed
+1687	1694	1623018068	src/liblibcustom.a	cea378ea180595c4
+1694	2257	1623018068	MobileNetwork	86e82be74b9ae47b
+0	1409	1623018134	src/libcustom@sta/NetConfAgent.cpp.o	21c62e8b0d219fed
+1410	1416	1623018134	src/liblibcustom.a	cea378ea180595c4
+1416	1698	1623018134	MobileNetwork	86e82be74b9ae47b
+1	4241	1623018216	MobileNetwork@exe/main.cpp.o	f0fc1b407c749a6c
+4241	4544	1623018217	MobileNetwork	86e82be74b9ae47b
+1	3947	1623018254	MobileNetwork@exe/main.cpp.o	f0fc1b407c749a6c
+3947	4196	1623018254	MobileNetwork	86e82be74b9ae47b

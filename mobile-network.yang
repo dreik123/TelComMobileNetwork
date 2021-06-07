@@ -1,51 +1,44 @@
 module mobile-network {
-    namespace "tieto";
+    namespace "ns:mobNetwork";
 
-    prefix mone;
+    prefix mobnet;
 
-    typedef mobileNumber {
-        type string {
-            pattern "[+][3][8][0]([0-9]{9})";
+container core
+{
+   config true;
+
+    list subscribers
+    {
+       key "number";
+
+        leaf userName {
+            config false;
+            type string;
+            description "User name ";
         }
-        description
-          "Standart format for Ukranian mobile number. " +
-                "namespace is urn for Ukraine";
-    }
 
-    container users  {
-        list subscriber {
-            key "number";
-
-            description "Info about call initialization with subscriber";
-
-            leaf number {
-                type mobileNumber;
-            }
-            
-            leaf userName {
-                type string;
-            }
-
-            leaf incomingNumber {
-                type mobileNumber;
-                config true;
-            }
-
-            leaf state {
-                config true;
-                mandatory true;
-                type enumeration {
-                    enum busy {
-                        description "Subscriber is busy";
-                    }
-                    enum active {
-                        description "Subsriber is active";
-                    }
-                    enum idle {
-                        description "Subscriber is idle";
-                    }
-                }
-            }
+        leaf number {
+            description "User phone number";
+            type string ;
         }
+         
+        leaf incomingNumber{
+            description "Incoming number";
+            type string;
+        }
+
+        leaf state{
+            description "User's state";
+            mandatory true;
+            type enumeration {
+                 enum busy; 
+                 enum active ;
+                 enum idle;
+            }
+        } 
+        
     }
+}
+
+   
 }
