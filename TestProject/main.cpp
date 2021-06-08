@@ -17,6 +17,12 @@ bool isRightNumber(std::string number)
 }
 int main()
 {
+    //DEBUG
+    NetConfAgent agent;
+    agent.initSysrepo();
+    std::cout << "inited" <<std::endl;
+    agent.subscribeForModelChanges("mobile-network");
+    //DEBUG
     while(true)
     {
         std::vector<std::string> commandArgs;

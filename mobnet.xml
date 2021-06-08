@@ -4,19 +4,19 @@
   </target>
   <error-option>rollback-on-error</error-option>
   <config>
-   <users xmlns="tieto">
-     <subscriber>
+   <core xmlns="ns:mobNetwork">
+     <subscribers>
        <number>+380643212341</number>
        <userName>Petra</userName>
        <incomingNumber>+380967821354</incomingNumber>
-       <state>hangUp</state>
-     </subscriber>
-          <subscriber>
+       <state>idle</state>
+     </subscribers>
+     <subscribers>
        <number>+380633212341</number>
        <userName>Andrii</userName>
        <incomingNumber>+380968821354</incomingNumber>
-       <state>hangUp</state>
-     </subscriber>
-   </users>
+       <state>idle</state>
+     </subscribers>
+   </cores>
   </config>
 </edit-config>
