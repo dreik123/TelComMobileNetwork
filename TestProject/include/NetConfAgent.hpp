@@ -7,7 +7,7 @@
 class NetConfAgent {
 public:
     bool initSysrepo();
-    bool fetchData(const std::string& xpath);
+    bool fetchData(const std::string& xpath, std::map<std::string, std::string>& res);
     bool subscribeForModelChanges(const std::string& module);
     bool registerOperData(const std::string& module, const std::string& xpath);
     bool subscribeForRpc(const std::string& xpath);
@@ -16,5 +16,4 @@ public:
 private:
     std::unique_ptr<sysrepo::Session> sess;
     std::unique_ptr<sysrepo::Connection> conn;
-    //std::unique_ptr<sysrepo::Subscribe> subscribe;
 };

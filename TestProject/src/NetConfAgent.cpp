@@ -6,27 +6,22 @@ bool NetConfAgent::initSysrepo()
 {
     conn = std::make_unique<sysrepo::Connection>();
     sess = std::make_unique<sysrepo::Session>(std::move(conn));
-    //subscribe = std::make_unique<sysrepo::Subscribe>(std::move(sess));
     return true;
 }
 
-bool NetConfAgent::fetchData(const std::string& xpath)
+bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std::string>& res)
 {
-    libyang::S_Data_Node data = sess->get_data(xpath.c_str());
+    auto values = sess->get_items(xpath.c_str());
+           // get_item / get data
+    if (values == nullptr)
+        return false;
 
-        /* go through all top-level siblings */
-    for (libyang::S_Data_Node &root : data->tree_for()) {
-        /* go through all the children of a top-level sibling */
-        for (libyang::S_Data_Node &node : root->tree_dfs()) {
-            libyang::S_Schema_Node schema = node->schema();
-            libyang::Schema_Node_List slist(schema);
-            cout << '\t' << "Keys:";
-            for (libyang::S_Schema_Node_Leaf &key : slist.keys()) {
-                cout << ' ' << key->name();
-            }
-            cout << endl;
-        }
+    for(unsigned int i = 0; i < values->val_cnt(); i++)
+    {
+        res.insert(std::pair<std::string, std::string>(std::string(values->val(i)->xpath()), 
+        std::string(values->val(i)->data()->get_string())));
     }
+            
     return true;
 }
 
@@ -105,7 +100,6 @@ const char *ev_to_str(sr_event_t ev) {
 
 bool NetConfAgent::subscribeForModelChanges(const std::string& module)
 {
-    cout << "subscribe for model changes" << endl;
     auto cb = [] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
             uint32_t request_id) {
             char change_path[100];
@@ -133,10 +127,8 @@ bool NetConfAgent::subscribeForModelChanges(const std::string& module)
                 cout << e.what() << endl;
             }
             return SR_ERR_OK;
-        };
-    cout << "subscribe for model changes 2" << endl;    
+        };   
     auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
-    cout << "inited subscribe" << endl;    
     subscribe->module_change_subscribe(module.c_str(), cb);
     cout << "subscribed" << endl;
     return true;
@@ -148,10 +140,19 @@ bool NetConfAgent::registerOperData(const std::string& module, const std::string
             uint32_t request_id, libyang::S_Data_Node &parent) {
 
             cout << "\n\n ========== CALLBACK CALLED TO PROVIDE \"" << path << "\" DATA ==========\n" << endl;
-
+            cout << "module_name: " << module_name << endl;
+            cout << "path: " << path << endl;
+            cout << "request_xpath: " << request_xpath << endl;
+            libyang::S_Context ctx = session->get_context();
+            libyang::S_Module mod = ctx->get_module(module_name);
+            auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
+            auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName");
             return SR_ERR_OK;
         };
-    //subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath.c_str());
+        
+    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
+    std::cout << "register" << std::endl;
+    subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath.c_str());
     return true;
 }
 
@@ -163,7 +164,8 @@ bool NetConfAgent::subscribeForRpc(const std::string& xpath)
         std::cout << "\n ========== RPC CALLED ==========\n" << std::endl;
         return SR_ERR_OK;
     };
-    //subscribe->rpc_subscribe(xpath.c_str(), cbVals, 1);
+    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
+    subscribe->rpc_subscribe(xpath.c_str(), cbVals, 1);
     return true;
 }
 
@@ -173,7 +175,8 @@ bool NetConfAgent::notifySysrepo(const std::string& module)
         const sysrepo::S_Vals vals, time_t timestamp) {
         cout << "\n ========== NOTIF RECEIVED ==========\n" << endl;
     };
-    //subscribe->event_notif_subscribe(module.c_str(), cbVals);
+    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
+    subscribe->event_notif_subscribe(module.c_str(), cbVals);
     return true;
 }
 
