@@ -26,7 +26,6 @@ int main()
     //agent.changeData(xpath, value);
     //agent.registerOperData("mobile-network", "/mobile-network:core/subscribers[number='+380877676678']");
 
-    //agent.notifySysrepo("/mobile-network:core");
     //agent.fetchData("/mobile_network:users/subscriber");
     //agent.subscribeForModelChanges("mobile-network");
     //DEBUG

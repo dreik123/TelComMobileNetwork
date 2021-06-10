@@ -90,11 +90,19 @@ bool NetConfAgent::registerOperData(const std::string& module, const std::string
 }
 
 
-bool NetConfAgent::subscribeForRpc(const std::string& xpath)
+bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std::string, std::string>& output_val)
 {
     std::cout << "Subscribe for rpc" << std::endl;
-    auto cbVals = [](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) {
+    auto cbVals = [output_val](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) {
         std::cout << "\n ========== RPC CALLED ==========\n" << std::endl;
+        auto out_vals = output->allocate(output_val.size());
+        int index = 0;
+        for(auto& v: output_val)
+        {
+            out_vals->val(index)->set(v.first.c_str(), v.second.c_str(), SR_STRING_T);
+            ++index;
+        }
+
         return SR_ERR_OK;
     };
     auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
@@ -102,20 +110,20 @@ bool NetConfAgent::subscribeForRpc(const std::string& xpath)
     return true;
 }
 
-bool NetConfAgent::notifySysrepo(const std::string& xpath, const std::map<std::string, std::string> values)
+bool NetConfAgent::notifySysrepo(const std::string& xpath, const std::map<std::string, std::string>& values)
 {
     auto in_vals = std::make_shared<sysrepo::Vals>(values.size());
     int index = 0;
     for(auto& v: values)
     {
-        in_vals->val(index)->set(v.first, v.second, SR_STRING_T);
+        in_vals->val(index)->set(v.first.c_str(), v.second.c_str(), SR_STRING_T);
         ++index;
     }
-    sess->event_notif_send(xpath.c_str, in_vals);
+    sess->event_notif_send(xpath.c_str(), in_vals);
     return true;
 }
 
-bool NetConfAgent::changeData(const std::string& xpath, std::string value)
+bool NetConfAgent::changeData(const std::string& xpath, const std::string& value)
 {
     sess->set_item_str(xpath.c_str(), value.c_str());
     sess->apply_changes();
