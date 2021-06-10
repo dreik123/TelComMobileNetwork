@@ -1,5 +1,10 @@
 #include "NetConfAgent.hpp"
 #include <iostream>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 using std::cout;
 using std::endl;
 bool NetConfAgent::initSysrepo()
@@ -24,67 +29,6 @@ bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std
             
     return true;
 }
-
-static void
-print_change(sysrepo::S_Change change) {
-    cout << endl;
-    switch(change->oper()) {
-    case SR_OP_CREATED:
-        if (nullptr != change->new_val()) {
-           cout <<"CREATED: ";
-           cout << change->new_val()->to_string();
-        }
-        break;
-    case SR_OP_DELETED:
-        if (nullptr != change->old_val()) {
-           cout << "DELETED: ";
-           cout << change->old_val()->to_string();
-        }
-    break;
-    case SR_OP_MODIFIED:
-        if (nullptr != change->old_val() && nullptr != change->new_val()) {
-           cout << "MODIFIED: ";
-           cout << "old value ";
-           cout << change->old_val()->to_string();
-           cout << "new value ";
-           cout << change->new_val()->to_string();
-        }
-    break;
-    case SR_OP_MOVED:
-        if (nullptr != change->old_val() && nullptr != change->new_val()) {
-           cout << "MOVED: ";
-           cout << change->new_val()->xpath();
-           cout << " after ";
-           cout << change->old_val()->xpath();
-        } else if (nullptr != change->new_val()) {
-           cout << "MOVED: ";
-           cout << change->new_val()->xpath();
-           cout << " first";
-        }
-    break;
-    }
-}
-
-/* Function to print current configuration state.
- * It does so by loading all the items of a session and printing them out. */
-static void
-print_current_config(sysrepo::S_Session session, const char *module_name)
-{
-    char select_xpath[100];
-    try {
-        snprintf(select_xpath, 100, "/%s:*//*", module_name);
-
-        auto values = session->get_items(&select_xpath[0]);
-        if (values == nullptr)
-            return;
-
-        for(unsigned int i = 0; i < values->val_cnt(); i++)
-            cout << values->val(i)->to_string();
-    } catch( const std::exception& e ) {
-        cout << e.what() << endl;
-    }
-}
-
 /* Helper function for printing events. */
 const char *ev_to_str(sr_event_t ev) {
     switch (ev) {
@@ -97,35 +41,11 @@ const char *ev_to_str(sr_event_t ev) {
         return "abort";
     }
 }
-
 bool NetConfAgent::subscribeForModelChanges(const std::string& module)
 {
     auto cb = [] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
             uint32_t request_id) {
-            char change_path[100];
-
-            try {
-                cout << "\n\n ========== Notification " << ev_to_str(event) << " =============================================";
-                if (SR_EV_CHANGE == event) {
-                    cout << "\n\n ========== CONFIG HAS CHANGED, CURRENT RUNNING CONFIG: ==========\n" << endl;
-                    print_current_config(sess, module_name);
-                }
-
-                cout << "\n\n ========== CHANGES: =============================================\n" << endl;
-
-                snprintf(change_path, 100, "/%s:*//.", module_name);
-
-                auto it = sess->get_changes_iter(change_path);
-
-                while (auto change = sess->get_change_next(it)) {
-                    print_change(change);
-                }
-
-                cout << "\n\n ========== END OF CHANGES =======================================\n" << endl;
-
-            } catch( const std::exception& e ) {
-                cout << e.what() << endl;
-            }
+            cout << "\n\n ========== Notification " << ev_to_str(event) << " =============================================";
             return SR_ERR_OK;
         };   
     auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
@@ -134,25 +54,38 @@ bool NetConfAgent::subscribeForModelChanges(const std::string& module)
     return true;
 }
 
+volatile int exit_application = 0;
+static void
+sigint_handler(int signum)
+{
+    exit_application = 1;
+}
 bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath)
 {
+    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess));
             auto cb = [] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
             uint32_t request_id, libyang::S_Data_Node &parent) {
 
             cout << "\n\n ========== CALLBACK CALLED TO PROVIDE \"" << path << "\" DATA ==========\n" << endl;
-            cout << "module_name: " << module_name << endl;
-            cout << "path: " << path << endl;
-            cout << "request_xpath: " << request_xpath << endl;
+
             libyang::S_Context ctx = session->get_context();
             libyang::S_Module mod = ctx->get_module(module_name);
             auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
-            auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName");
+            auto number = std::make_shared<libyang::Data_Node>(subscribers, mod, "number", "+380877676678");
+            auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName", "bob");
+            cout << "registered" << endl;
             return SR_ERR_OK;
         };
         
-    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
+     
     std::cout << "register" << std::endl;
     subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath.c_str());
+            /* loop until ctrl-c is pressed / SIGINT is received */
+        signal(SIGINT, sigint_handler);
+        while (!exit_application) {
+            sleep(100);  /* or do some more useful work... */
+        }
+        std::cout << "quit" << std::endl;
     return true;
 }
 
@@ -169,14 +102,16 @@ bool NetConfAgent::subscribeForRpc(const std::string& xpath)
     return true;
 }
 
-bool NetConfAgent::notifySysrepo(const std::string& module)
+bool NetConfAgent::notifySysrepo(const std::string& xpath, const std::map<std::string, std::string> values)
 {
-    auto cbVals = [] (sysrepo::S_Session session, const sr_ev_notif_type_t notif_type, const char *path,
-        const sysrepo::S_Vals vals, time_t timestamp) {
-        cout << "\n ========== NOTIF RECEIVED ==========\n" << endl;
-    };
-    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
-    subscribe->event_notif_subscribe(module.c_str(), cbVals);
+    auto in_vals = std::make_shared<sysrepo::Vals>(values.size());
+    int index = 0;
+    for(auto& v: values)
+    {
+        in_vals->val(index)->set(v.first, v.second, SR_STRING_T);
+        ++index;
+    }
+    sess->event_notif_send(xpath.c_str, in_vals);
     return true;
 }
 

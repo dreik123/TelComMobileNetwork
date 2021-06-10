@@ -21,12 +21,14 @@ int main()
     NetConfAgent agent;
     agent.initSysrepo();
     std::cout << "inited" <<std::endl;
-    std::string xpath = "/mobile-network:core/subscribers[+380877676678]/userName";
-    std::string value = "John";
-    agent.changeData(xpath, value);
-    //agent.registerOperData("mobile-network", "/mobile-network:core");
+    //std::string xpath = "/mobile-network:core/subscribers[number='+380877676678']/state";
+    //std::string value = "idle";
+    //agent.changeData(xpath, value);
+    //agent.registerOperData("mobile-network", "/mobile-network:core/subscribers[number='+380877676678']");
+
+    //agent.notifySysrepo("/mobile-network:core");
     //agent.fetchData("/mobile_network:users/subscriber");
-    agent.subscribeForModelChanges("mobile-network");
+    //agent.subscribeForModelChanges("mobile-network");
     //DEBUG
     while(true)
     {
