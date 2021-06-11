@@ -41,6 +41,13 @@ const char *ev_to_str(sr_event_t ev) {
         return "abort";
     }
 }
+
+volatile int exit_application = 0;
+static void
+sigint_handler(int signum)
+{
+    exit_application = 1;
+}
 bool NetConfAgent::subscribeForModelChanges(const std::string& module)
 {
     auto cb = [] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
@@ -51,39 +58,37 @@ bool NetConfAgent::subscribeForModelChanges(const std::string& module)
     auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
     subscribe->module_change_subscribe(module.c_str(), cb);
     cout << "subscribed" << endl;
+            signal(SIGINT, sigint_handler);
+        while (!exit_application) {
+            sleep(1000);  /* or do some more useful work... */
+        }
+        std::cout << "quit" << std::endl;
     return true;
 }
 
-volatile int exit_application = 0;
-static void
-sigint_handler(int signum)
-{
-    exit_application = 1;
-}
 bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath)
 {
     auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess));
-            auto cb = [] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
-            uint32_t request_id, libyang::S_Data_Node &parent) {
+        auto cb = [] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
+        uint32_t request_id, libyang::S_Data_Node &parent) {
 
-            cout << "\n\n ========== CALLBACK CALLED TO PROVIDE \"" << path << "\" DATA ==========\n" << endl;
+        cout << "\n\n ========== CALLBACK CALLED TO PROVIDE \"" << path << "\" DATA ==========\n" << endl;
 
-            libyang::S_Context ctx = session->get_context();
-            libyang::S_Module mod = ctx->get_module(module_name);
-            auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
-            auto number = std::make_shared<libyang::Data_Node>(subscribers, mod, "number", "+380877676678");
-            auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName", "bob");
-            cout << "registered" << endl;
-            return SR_ERR_OK;
-        };
-        
-     
+        libyang::S_Context ctx = session->get_context();
+        libyang::S_Module mod = ctx->get_module(module_name);
+        auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
+        auto number = std::make_shared<libyang::Data_Node>(subscribers, mod, "number", "+380877676678");
+        auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName", "bob");
+        cout << "registered" << endl;
+        return SR_ERR_OK;
+    };
+
     std::cout << "register" << std::endl;
     subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath.c_str());
             /* loop until ctrl-c is pressed / SIGINT is received */
         signal(SIGINT, sigint_handler);
         while (!exit_application) {
-            sleep(100);  /* or do some more useful work... */
+            sleep(1000);  /* or do some more useful work... */
         }
         std::cout << "quit" << std::endl;
     return true;
@@ -102,11 +107,15 @@ bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std:
             out_vals->val(index)->set(v.first.c_str(), v.second.c_str(), SR_STRING_T);
             ++index;
         }
-
         return SR_ERR_OK;
     };
     auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
     subscribe->rpc_subscribe(xpath.c_str(), cbVals, 1);
+        signal(SIGINT, sigint_handler);
+        while (!exit_application) {
+            sleep(1000);  /* or do some more useful work... */
+        }
+        std::cout << "quit" << std::endl;
     return true;
 }
 

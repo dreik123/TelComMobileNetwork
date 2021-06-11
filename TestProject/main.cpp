@@ -4,7 +4,7 @@
 #include <vector>
 #include <regex>
 #include "NetConfAgent.hpp"
-
+#include <thread>
 
 bool isFind(std::string str, std::string command)
 {
@@ -28,6 +28,15 @@ int main()
 
     //agent.fetchData("/mobile_network:users/subscriber");
     //agent.subscribeForModelChanges("mobile-network");
+    std::map<std::string, std::string> rpc_output {
+        {"/test-examples:activate-software-image/status", "The image acmefw-2.3 is being installed."},
+        {"/test-examples:activate-software-image/version", "2.3"},
+        {"/test-examples:activate-software-image/location", "/root/"}};
+    agent.subscribeForRpc("/test-examples:activate-software-image", rpc_output);
+
+    /*std::map<std::string, std::string> notif {{"/test-examples:test-notif/val1", "some-value"},
+    {"/test-examples:test-notif/val2", "some-other-value"}};
+    agent.notifySysrepo("/test-examples:test-notif", notif);*/
     //DEBUG
     while(true)
     {
