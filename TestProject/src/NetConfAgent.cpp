@@ -26,8 +26,10 @@ bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std
             
     return true;
 }
-
-void print_change(sysrepo::S_Change change) {
+namespace 
+{
+    void print_change(sysrepo::S_Change change) 
+    {
     cout << endl;
     switch(change->oper()) {
     case SR_OP_CREATED:
@@ -65,6 +67,8 @@ void print_change(sysrepo::S_Change change) {
     break;
     }
 }
+}
+
 
 bool NetConfAgent::subscribeForModelChanges(const std::string& module)
 {
@@ -108,7 +112,7 @@ bool NetConfAgent::registerOperData(const std::string& module, const std::string
 }
 
 
-bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std::string, std::string>& output_val)
+bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std::string, std::string>& output_val_for_rpc)
 {
     auto cbVals = [output_val](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, 
     sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) 
