@@ -18,21 +18,26 @@ bool isRightNumber(std::string number)
 int main()
 {
     //DEBUG
-    NetConfAgent agent;
-    agent.initSysrepo();
-    std::cout << "inited" <<std::endl;
-    //std::string xpath = "/mobile-network:core/subscribers[number='+380877676678']/state";
-    //std::string value = "idle";
-    //agent.changeData(xpath, value);
-    //agent.registerOperData("mobile-network", "/mobile-network:core/subscribers[number='+380877676678']");
-
-    //agent.fetchData("/mobile_network:users/subscriber");
+    /*NetConfAgent agent;
+    agent.initSysrepo();*/
+    /*std::string xpath = "/mobile-network:core/subscribers[number='+380877686678']/state";
+    std::string value = "busy";
+    agent.changeData(xpath, value);*/
+    /*std::map<std::string, std::string> operData {{"/mobile-network:core/subscribers[number='+380877686678']/userName", "Bob"}};
+    agent.registerOperData("mobile-network", "/mobile-network:core/subscribers[number='+380877686678']", operData);*/
+    /*std::map<std::string, std::string> data;
+    agent.fetchData("/mobile-network:core/subscribers[number='+380877686678']/number", data);
+    for(auto &d: data)
+    {
+        std::cout << "xpath: " << d.first << "\n"
+        << "data: " << d.second << "\n";
+    }*/
     //agent.subscribeForModelChanges("mobile-network");
-    std::map<std::string, std::string> rpc_output {
+    /*std::map<std::string, std::string> rpc_output {
         {"/test-examples:activate-software-image/status", "The image acmefw-2.3 is being installed."},
         {"/test-examples:activate-software-image/version", "2.3"},
         {"/test-examples:activate-software-image/location", "/root/"}};
-    agent.subscribeForRpc("/test-examples:activate-software-image", rpc_output);
+    agent.subscribeForRpc("/test-examples:activate-software-image", rpc_output);*/
 
     /*std::map<std::string, std::string> notif {{"/test-examples:test-notif/val1", "some-value"},
     {"/test-examples:test-notif/val2", "some-other-value"}};

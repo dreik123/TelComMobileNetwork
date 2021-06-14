@@ -1,22 +1,19 @@
 <edit-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:xc="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <target>
-    <running/>
-  </target>
-  <error-option>rollback-on-error</error-option>
-  <config>
-   <core xmlns="ns:mobNetwork">
-     <subscribers>
-       <number>+380643212341</number>
-       <userName>Petra</userName>
-       <incomingNumber>+380967821354</incomingNumber>
-       <state>idle</state>
-     </subscribers>
-     <subscribers>
-       <number>+380633212341</number>
-       <userName>Andrii</userName>
-       <incomingNumber>+380968821354</incomingNumber>
-       <state>idle</state>
-     </subscribers>
-   </cores>
-  </config>
+    <target>
+      <running/>
+    </target>
+    <error-option>rollback-on-error</error-option>
+    <config>
+      <core xmlns="ns:mobNetwork">
+        <subscribers>
+          <number>+380877686678</number>
+          <state>idle</state>
+        </subscribers>
+        <subscribers>
+          <number>+380874686678</number>
+          <state>busy</state>
+        </subscribers>
+      </core>
+    </config>
 </edit-config>
+

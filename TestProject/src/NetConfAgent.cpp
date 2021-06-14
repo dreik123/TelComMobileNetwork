@@ -9,97 +9,110 @@ using std::cout;
 using std::endl;
 bool NetConfAgent::initSysrepo()
 {
-    conn = std::make_unique<sysrepo::Connection>();
-    sess = std::make_unique<sysrepo::Session>(std::move(conn));
+    conn = std::make_shared<sysrepo::Connection>();
+    sess = std::make_shared<sysrepo::Session>(conn);
+    subscribe = std::make_shared<sysrepo::Subscribe>(sess);
     return true;
 }
 
 bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std::string>& res)
 {
-    auto values = sess->get_items(xpath.c_str());
-           // get_item / get data
+    auto values = sess->get_item(xpath.c_str());
     if (values == nullptr)
         return false;
 
-    for(unsigned int i = 0; i < values->val_cnt(); i++)
-    {
-        res.insert(std::pair<std::string, std::string>(std::string(values->val(i)->xpath()), 
-        std::string(values->val(i)->data()->get_string())));
-    }
+    res.insert(std::pair<std::string, std::string>(std::string(values->xpath()), 
+    std::string(values->data()->get_string())));
             
     return true;
 }
-/* Helper function for printing events. */
-const char *ev_to_str(sr_event_t ev) {
-    switch (ev) {
-    case SR_EV_CHANGE:
-        return "change";
-    case SR_EV_DONE:
-        return "done";
-    case SR_EV_ABORT:
-    default:
-        return "abort";
+
+void print_change(sysrepo::S_Change change) {
+    cout << endl;
+    switch(change->oper()) {
+    case SR_OP_CREATED:
+        if (nullptr != change->new_val()) {
+           cout <<"CREATED: ";
+           cout << change->new_val()->to_string();
+        }
+        break;
+    case SR_OP_DELETED:
+        if (nullptr != change->old_val()) {
+           cout << "DELETED: ";
+           cout << change->old_val()->to_string();
+        }
+    break;
+    case SR_OP_MODIFIED:
+        if (nullptr != change->old_val() && nullptr != change->new_val()) {
+           cout << "MODIFIED: ";
+           cout << "old value ";
+           cout << change->old_val()->to_string();
+           cout << "new value ";
+           cout << change->new_val()->to_string();
+        }
+    break;
+    case SR_OP_MOVED:
+        if (nullptr != change->old_val() && nullptr != change->new_val()) {
+           cout << "MOVED: ";
+           cout << change->new_val()->xpath();
+           cout << " after ";
+           cout << change->old_val()->xpath();
+        } else if (nullptr != change->new_val()) {
+           cout << "MOVED: ";
+           cout << change->new_val()->xpath();
+           cout << " first";
+        }
+    break;
     }
 }
 
-volatile int exit_application = 0;
-static void
-sigint_handler(int signum)
-{
-    exit_application = 1;
-}
 bool NetConfAgent::subscribeForModelChanges(const std::string& module)
 {
     auto cb = [] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
-            uint32_t request_id) {
-            cout << "\n\n ========== Notification " << ev_to_str(event) << " =============================================";
-            return SR_ERR_OK;
-        };   
-    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
-    subscribe->module_change_subscribe(module.c_str(), cb);
-    cout << "subscribed" << endl;
-            signal(SIGINT, sigint_handler);
-        while (!exit_application) {
-            sleep(1000);  /* or do some more useful work... */
+    uint32_t request_id) 
+    {
+        std::string change_path(module_name);
+        auto it = sess->get_changes_iter(change_path.c_str());
+
+        while (auto change = sess->get_change_next(it)) 
+        {
+            print_change(change);
         }
-        std::cout << "quit" << std::endl;
+        return SR_ERR_OK;
+    };    
+    subscribe->module_change_subscribe(module.c_str(), cb);
     return true;
 }
 
-bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath)
+bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath, const std::map<std::string, std::string>& data)
 {
-    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess));
-        auto cb = [] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
-        uint32_t request_id, libyang::S_Data_Node &parent) {
-
-        cout << "\n\n ========== CALLBACK CALLED TO PROVIDE \"" << path << "\" DATA ==========\n" << endl;
-
+    auto cb = [data] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
+    uint32_t request_id, libyang::S_Data_Node &parent) 
+    {
         libyang::S_Context ctx = session->get_context();
         libyang::S_Module mod = ctx->get_module(module_name);
-        auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
+        for(auto &d: data)
+        {
+            parent->new_path(ctx, d.first.c_str(), d.second.c_str(), LYD_ANYDATA_CONSTSTRING, 0);
+        }
+        
+        /*auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
         auto number = std::make_shared<libyang::Data_Node>(subscribers, mod, "number", "+380877676678");
-        auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName", "bob");
-        cout << "registered" << endl;
+        auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName", "bob");*/
         return SR_ERR_OK;
     };
 
-    std::cout << "register" << std::endl;
     subscribe->oper_get_items_subscribe(module.c_str(), cb, xpath.c_str());
-            /* loop until ctrl-c is pressed / SIGINT is received */
-        signal(SIGINT, sigint_handler);
-        while (!exit_application) {
-            sleep(1000);  /* or do some more useful work... */
-        }
-        std::cout << "quit" << std::endl;
+
     return true;
 }
 
 
 bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std::string, std::string>& output_val)
 {
-    std::cout << "Subscribe for rpc" << std::endl;
-    auto cbVals = [output_val](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) {
-        std::cout << "\n ========== RPC CALLED ==========\n" << std::endl;
+    auto cbVals = [output_val](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, 
+    sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) 
+    {
         auto out_vals = output->allocate(output_val.size());
         int index = 0;
         for(auto& v: output_val)
@@ -109,13 +122,7 @@ bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std:
         }
         return SR_ERR_OK;
     };
-    auto subscribe = std::make_shared<sysrepo::Subscribe>(std::move(sess)); 
     subscribe->rpc_subscribe(xpath.c_str(), cbVals, 1);
-        signal(SIGINT, sigint_handler);
-        while (!exit_application) {
-            sleep(1000);  /* or do some more useful work... */
-        }
-        std::cout << "quit" << std::endl;
     return true;
 }
 
