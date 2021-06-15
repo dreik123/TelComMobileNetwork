@@ -114,12 +114,12 @@ bool NetConfAgent::registerOperData(const std::string& module, const std::string
 
 bool NetConfAgent::subscribeForRpc(const std::string& xpath, const std::map<std::string, std::string>& output_val_for_rpc)
 {
-    auto cbVals = [output_val](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, 
+    auto cbVals = [output_val_for_rpc](sysrepo::S_Session session, const char* op_path, const sysrepo::S_Vals input, 
     sr_event_t event, uint32_t request_id, sysrepo::S_Vals_Holder output) 
     {
-        auto out_vals = output->allocate(output_val.size());
+        auto out_vals = output->allocate(output_val_for_rpc.size());
         int index = 0;
-        for(auto& v: output_val)
+        for(auto& v: output_val_for_rpc)
         {
             out_vals->val(index)->set(v.first.c_str(), v.second.c_str(), SR_STRING_T);
             ++index;

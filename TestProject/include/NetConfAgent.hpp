@@ -1,3 +1,5 @@
+#ifndef _NET_CONF_AGENT_HPP_
+#define _NET_CONF_AGENT_HPP_
 #include <memory>
 #include <sysrepo-cpp/Session.hpp>
 #include <sysrepo-cpp/Connection.hpp>
@@ -52,9 +54,10 @@ public:
      * \param[in] xpath Path to change data
      * \param[in] values Value to change data
      * */
-    bool changeData(const std::string& xpath, const std::string& values);
+    bool changeData(const std::string& xpath, const std::string& value);
 private:
     std::shared_ptr<sysrepo::Session> sess; /**< sysrepo session */
     std::shared_ptr<sysrepo::Connection> conn; /**< sysrepo connection */
     std::shared_ptr<sysrepo::Subscribe> subscribe; /**< sysrepo subscription */
 };
+#endif
