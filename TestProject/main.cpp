@@ -17,6 +17,7 @@ bool isRightNumber(std::string number)
 }
 int main()
 {
+    MobileClient client;
     while(true)
     {
         std::vector<std::string> commandArgs;
@@ -39,6 +40,7 @@ int main()
             {
                 if(isRightNumber(commandArgs.at(1)))
                 {
+                    client.registerClient(commandArgs.at(1));
                     std::cout << "registered" << std::endl;
                 }
                 else

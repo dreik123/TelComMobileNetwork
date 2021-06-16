@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
-
+class MobileClient;
 /**
  * \brief Class for calling sysrepo functions
  * \author Andrii Pukhalevych
@@ -29,14 +29,14 @@ public:
      * Subscribing for changes in the model and calling the function if they occur
      * \param[in] module The name of the model we are subscribing to changes
      * */
-    bool subscribeForModelChanges(const std::string& module);
+    bool subscribeForModelChanges(const std::string& module, MobileClient* client);
     /**
      * Register for providing operational data 
      * \param[in] module The name of the model for providing operational data
      * \param[in] xpath Path to the operational data
      * \param[in] data Container with operational data. The key is xpath, the value is the value of the attribute
      * */
-    bool registerOperData(const std::string& module, const std::string& xpath, const std::map<std::string, std::string>& data);
+    bool registerOperData(const std::string& module, const std::string& xpath, MobileClient* client);
     /**
      * Subscribes to receive rpc from the user and send feedback to the user
      * \param[in] xpath Path to rpc
@@ -56,8 +56,8 @@ public:
      * */
     bool changeData(const std::string& xpath, const std::string& value);
 private:
-    std::shared_ptr<sysrepo::Session> sess; /**< sysrepo session */
-    std::shared_ptr<sysrepo::Connection> conn; /**< sysrepo connection */
-    std::shared_ptr<sysrepo::Subscribe> subscribe; /**< sysrepo subscription */
+    std::shared_ptr<sysrepo::Session> _sess; /**< sysrepo session */
+    std::shared_ptr<sysrepo::Connection> _conn; /**< sysrepo connection */
+    std::shared_ptr<sysrepo::Subscribe> _subscribe; /**< sysrepo subscription */
 };
 #endif

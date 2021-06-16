@@ -2,15 +2,27 @@
 
 MobileClient::MobileClient()
 {
-    agent = std::make_unique<NetConfAgent>();
-    agent->initSysrepo();
+    _agent = std::make_shared<NetConfAgent>();
+    _agent->initSysrepo();
 }
 
 bool MobileClient::registerClient(const std::string& number)
 {
-    clientNumber = number;
-    agent->subscribeForModelChanges("mobile-network");
-    agent->changeData("/mobile-network:core/subscribers[number='" + number + "']/state", "idle");
+    _number = number;
+    std::string xpath = "/mobile-network:core/subscribers[number='" + _number + "']";
+    _agent->registerOperData("mobile-network", xpath, this);
+    _agent->changeData(xpath + "/state", "idle");
+    _agent->subscribeForModelChanges("mobile-network", this);
     return true;
+}
+
+void MobileClient::handleModuleChange()
+{
+    std::cout << "module change" << std::endl;
+}
+
+void MobileClient::handleOperData()
+{
+    std::cout << "oper data" << std::endl;
 }
 

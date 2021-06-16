@@ -6,10 +6,11 @@ public:
     MobileClient();
     bool registerClient(const std::string& number);
     void setName(const std::string& name);
-
+    void handleModuleChange();
+    void handleOperData();
 private:
-    std::unique_ptr<NetConfAgent> agent;
-    std::string userName;
-    std::string clientNumber;
+    std::shared_ptr<NetConfAgent> _agent;
+    std::string _userName;
+    std::string _number;
 };
 #endif
