@@ -24,6 +24,10 @@ int main()
         std::string command;
 
         std::getline(std::cin, command);
+        if(command.size() == 0)
+        {
+            continue;
+        }
         std::istringstream iss(command);
         std::string arg;
         while(std::getline(iss, arg, ' '))
@@ -41,7 +45,6 @@ int main()
                 if(isRightNumber(commandArgs.at(1)))
                 {
                     client.registerClient(commandArgs.at(1));
-                    std::cout << "registered" << std::endl;
                 }
                 else
                 {
@@ -58,6 +61,7 @@ int main()
         {
             if(commandArgs.size() > 1)
             {
+                client.setName(commandArgs.at(1));
                 std::cout << "named" << std::endl;
             }
             else
@@ -75,7 +79,7 @@ int main()
             {
                 if(isRightNumber(commandArgs.at(1)))
                 {
-                    std::cout << "calling" << std::endl;
+                    client.call(commandArgs.at(1));
                 }
                 else
                 {

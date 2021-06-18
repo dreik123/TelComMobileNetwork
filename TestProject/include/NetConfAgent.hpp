@@ -29,14 +29,14 @@ public:
      * Subscribing for changes in the model and calling the function if they occur
      * \param[in] module The name of the model we are subscribing to changes
      * */
-    bool subscribeForModelChanges(const std::string& module, MobileClient* client);
+    bool subscribeForModelChanges(const std::string& module, const std::string& xpath, MobileClient& client);
     /**
      * Register for providing operational data 
      * \param[in] module The name of the model for providing operational data
      * \param[in] xpath Path to the operational data
      * \param[in] data Container with operational data. The key is xpath, the value is the value of the attribute
      * */
-    bool registerOperData(const std::string& module, const std::string& xpath, MobileClient* client);
+    bool registerOperData(const std::string& module, const std::string& xpath, const std::map<std::string, std::string>& data, MobileClient& client);
     /**
      * Subscribes to receive rpc from the user and send feedback to the user
      * \param[in] xpath Path to rpc

@@ -22,38 +22,39 @@ bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std
         return false;
 
     res.insert(std::pair<std::string, std::string>(std::string(values->xpath()), 
-    std::string(values->data()->get_string())));
+    std::string(values->val_to_string())));
             
     return true;
 }
 
 
-bool NetConfAgent::subscribeForModelChanges(const std::string& module, MobileClient* client)
+bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std::string& xpath, MobileClient& client)
 {
-    auto cb = [client] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
+    auto cb = [&client] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
     uint32_t request_id) 
     {
-        std::string change_path(module_name);
-        auto it = sess->get_changes_iter(change_path.c_str());
-        client->handleModuleChange();
+        if(SR_EV_DONE == event)
+        {
+            client.handleModuleChange(sess, event, request_id);
+        }
         return SR_ERR_OK;
     };    
-    _subscribe->module_change_subscribe(module.c_str(), cb);
+    _subscribe->module_change_subscribe(module.c_str(), cb, xpath.c_str());
     return true;
 }
 
-bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath, MobileClient* client)
+bool NetConfAgent::registerOperData(const std::string& module, const std::string& xpath, const std::map<std::string, std::string>& data, MobileClient& client)
 {
-    auto cb = [client] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
+    auto cb = [&client, data] (sysrepo::S_Session session, const char *module_name, const char *path, const char *request_xpath,
     uint32_t request_id, libyang::S_Data_Node &parent) 
     {
         libyang::S_Context ctx = session->get_context();
         libyang::S_Module mod = ctx->get_module(module_name);
-        client->handleOperData();
-        /*for(auto &d: data)
+        client.handleOperData();
+        for(auto &d: data)
         {
             parent->new_path(ctx, d.first.c_str(), d.second.c_str(), LYD_ANYDATA_CONSTSTRING, 0);
-        }*/
+        }
         
         /*auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
         auto number = std::make_shared<libyang::Data_Node>(subscribers, mod, "number", "+380877676678");
