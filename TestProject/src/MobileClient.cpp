@@ -1,9 +1,18 @@
 #include "MobileClient.hpp"
-
+#include <string>
 MobileClient::MobileClient()
 {
     _agent = std::make_shared<NetConfAgent>();
     _agent->initSysrepo();
+}
+namespace
+{
+    const std::string moduleName = "mobile-network";
+    const std::string startxPath = "/mobile-network:core/subscribers[number='";
+    const std::string endxPath = "']";
+    const std::string endxPathUserName = "']/userName";
+    const std::string endxPathIncNumb = "']/incomingNumber";
+    const std::string endxPathState = "']/state";
 }
 
 bool MobileClient::registerClient(const std::string& number)
@@ -11,11 +20,11 @@ bool MobileClient::registerClient(const std::string& number)
     if(!_userName.empty())
     {
         _number = number;
-        std::string xpath = "/mobile-network:core/subscribers[number='" + _number + "']";
-        std::map<std::string, std::string> userName = {{"/mobile-network:core/subscribers[number='" + _number + "']/userName", _userName}};
-        _agent->changeData(xpath + "/state", "idle");
-        _agent->registerOperData("mobile-network", xpath, userName, *this);
-        _agent->subscribeForModelChanges("mobile-network", xpath, *this);
+        std::string xpath = startxPath + _number + endxPath;
+        std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
+        _agent->changeData(startxPath + _number + endxPathState, "idle");
+        _agent->registerOperData(moduleName, xpath, userName, *this);
+        _agent->subscribeForModelChanges(moduleName, xpath, *this);
     }
     else
     {
@@ -24,17 +33,9 @@ bool MobileClient::registerClient(const std::string& number)
     return true;
 }
 
-void MobileClient::handleModuleChange(sysrepo::S_Session sess, sr_event_t event,
-    uint32_t request_id)
+void MobileClient::handleModuleChange()
 {
-    std::map<std::string, std::string> data;
-    _agent->fetchData("/mobile-network:core/subscribers[number='" + _number + "']/incomingNumber", data);
-    if(data["/mobile-network:core/subscribers[number='" + _number + "']/incomingNumber"].length() > 0)
-    {
-        std::cout << "calling" << _number << std::endl;
-    }
 }
-
 void MobileClient::handleOperData()
 {
     std::cout << "oper data" << std::endl;
@@ -47,16 +48,24 @@ void MobileClient::setName(const std::string& name)
 
 void MobileClient::call(const std::string& number)
 {
-    std::string xpath = "/mobile-network:core/subscribers[number='" + number + "']";
-    std::string xpathSt = xpath + "/state";
-    std::string xpathIncNumb = xpath + "/incomingNumber";
     std::map<std::string, std::string> result;
-    _agent->fetchData(xpathSt, result);
-    if(result[xpathSt] == "idle")
+    _agent->fetchData(startxPath + number + endxPathState, result);
+    _agent->fetchData(startxPath + _number + endxPathState, result);
+    if(result[startxPath + number + endxPathState] == "idle"
+    && result[startxPath + _number + endxPathState] == "idle")
     {
-        _agent->changeData(xpathIncNumb, _number);
-        _agent->changeData(xpathSt, "active");
-        _agent->changeData("/mobile-network:core/subscribers[number='" + _number + "']/state", "active");
+        _abbonentB = number;
+        _agent->changeData(startxPath + number + endxPath, _number);
+        _agent->changeData(startxPath + number + endxPathState, "active");
+        _agent->changeData(startxPath + _number + endxPathState, "active");
+    }
+    else
+    {
+        std::cout << "Abbonent is busy or you are calling another person" << std::endl;
     }
 
 }
+
+void MobileClient::answer
+
+

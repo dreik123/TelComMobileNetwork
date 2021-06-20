@@ -26,18 +26,111 @@ bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std
             
     return true;
 }
+#define MAX_LEN 100
+static void
+print_change(sysrepo::S_Change change) {
+    cout << endl;
+    switch(change->oper()) {
+    case SR_OP_CREATED:
+        if (nullptr != change->new_val()) {
+           cout <<"CREATED: ";
+           cout << change->new_val()->to_string();
+        }
+        break;
+    case SR_OP_DELETED:
+        if (nullptr != change->old_val()) {
+           cout << "DELETED: ";
+           cout << change->old_val()->to_string();
+        }
+    break;
+    case SR_OP_MODIFIED:
+        if (nullptr != change->old_val() && nullptr != change->new_val()) {
+           cout << "MODIFIED: ";
+           cout << "old value ";
+           cout << change->old_val()->to_string();
+           cout << "new value ";
+           cout << change->new_val()->to_string();
+        }
+    break;
+    case SR_OP_MOVED:
+        if (nullptr != change->old_val() && nullptr != change->new_val()) {
+           cout << "MOVED: ";
+           cout << change->new_val()->xpath();
+           cout << " after ";
+           cout << change->old_val()->xpath();
+        } else if (nullptr != change->new_val()) {
+           cout << "MOVED: ";
+           cout << change->new_val()->xpath();
+           cout << " first";
+        }
+    break;
+    }
+}
 
+/* Function to print current configuration state.
+ * It does so by loading all the items of a session and printing them out. */
+static void
+print_current_config(sysrepo::S_Session session, const char *module_name)
+{
+    char select_xpath[MAX_LEN];
+    try {
+        snprintf(select_xpath, MAX_LEN, "/%s:*//*", module_name);
+
+        auto values = session->get_items(&select_xpath[0]);
+        if (values == nullptr)
+            return;
+
+        for(unsigned int i = 0; i < values->val_cnt(); i++)
+            cout << values->val(i)->to_string();
+    } catch( const std::exception& e ) {
+        cout << e.what() << endl;
+    }
+}
+
+/* Helper function for printing events. */
+const char *ev_to_str(sr_event_t ev) {
+    switch (ev) {
+    case SR_EV_CHANGE:
+        return "change";
+    case SR_EV_DONE:
+        return "done";
+    case SR_EV_ABORT:
+    default:
+        return "abort";
+    }
+}
 
 bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std::string& xpath, MobileClient& client)
 {
     auto cb = [&client] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
     uint32_t request_id) 
     {
-        if(SR_EV_DONE == event)
+        char change_path[MAX_LEN];
+        try
         {
-            client.handleModuleChange(sess, event, request_id);
-        }
-        return SR_ERR_OK;
+            if (SR_EV_DONE == event)
+            {
+
+                cout << "\n\n ========== CHANGES: =============================================\n" << endl;
+
+                snprintf(change_path, MAX_LEN, "/%s:*//.", module_name);
+
+                auto it = sess->get_changes_iter(change_path);
+
+                while (auto change = sess->get_change_next(it)) {
+                    print_change(change);
+                }
+                cout << "\n\n ========== END OF CHANGES =======================================\n" << endl;
+            }
+
+
+                
+        }catch( const std::exception& e ) {
+                cout << e.what() << endl;
+            }
+            client.handleModuleChange();
+            return SR_ERR_OK;
+                
     };    
     _subscribe->module_change_subscribe(module.c_str(), cb, xpath.c_str());
     return true;
