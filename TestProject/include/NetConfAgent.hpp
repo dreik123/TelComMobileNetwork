@@ -55,6 +55,7 @@ public:
      * \param[in] values Value to change data
      * */
     bool changeData(const std::string& xpath, const std::string& value);
+    bool changeData(const std::string& xpath);
 private:
     std::shared_ptr<sysrepo::Session> _sess; /**< sysrepo session */
     std::shared_ptr<sysrepo::Connection> _conn; /**< sysrepo connection */

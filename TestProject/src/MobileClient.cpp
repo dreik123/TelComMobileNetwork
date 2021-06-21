@@ -4,6 +4,7 @@ MobileClient::MobileClient()
 {
     _agent = std::make_shared<NetConfAgent>();
     _agent->initSysrepo();
+    _register = false;
 }
 namespace
 {
@@ -19,6 +20,7 @@ bool MobileClient::registerClient(const std::string& number)
 {
     if(!_userName.empty())
     {
+        _register = true;
         _number = number;
         std::string xpath = startxPath + _number + endxPath;
         std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
@@ -32,13 +34,16 @@ bool MobileClient::registerClient(const std::string& number)
     }
     return true;
 }
-
+bool MobileClient::isRegister()
+{
+    return _register;
+}
 void MobileClient::handleModuleChange()
 {
+
 }
 void MobileClient::handleOperData()
 {
-    std::cout << "oper data" << std::endl;
 }
 
 void MobileClient::setName(const std::string& name)
@@ -48,11 +53,11 @@ void MobileClient::setName(const std::string& name)
 
 void MobileClient::call(const std::string& number)
 {
-    std::map<std::string, std::string> result;
-    _agent->fetchData(startxPath + number + endxPathState, result);
-    _agent->fetchData(startxPath + _number + endxPathState, result);
-    if(result[startxPath + number + endxPathState] == "idle"
-    && result[startxPath + _number + endxPathState] == "idle")
+    std::map<std::string, std::string> data;
+    _agent->fetchData(startxPath + number + endxPathState, data);
+    _agent->fetchData(startxPath + _number + endxPathState, data);
+    if(data[startxPath + number + endxPathState] == "idle"
+    && data[startxPath + _number + endxPathState] == "idle")
     {
         _abbonentB = number;
         _agent->changeData(startxPath + number + endxPath, _number);
@@ -66,6 +71,71 @@ void MobileClient::call(const std::string& number)
 
 }
 
-void MobileClient::answer
+void MobileClient::answer()
+{
+    if(_abbonentB.empty())
+    {
+        std::map<std::string, std::string> data;
+        _agent->fetchData(startxPath + _number + endxPathState, data);
+        _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
+        if(data[startxPath + _number + endxPathState] == "active")
+        {
+            _agent->changeData(startxPath + _number + endxPathState, "busy");
+            _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "busy");
+        }
+    }
+    
+}
+
+void MobileClient::reject()
+{
+    if(_abbonentB.empty())
+    {
+        std::map<std::string, std::string> data;
+        _agent->fetchData(startxPath + _number + endxPathState, data);
+        _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
+        if(data[startxPath + _number + endxPathState] == "active")
+        {
+            _agent->changeData(startxPath + _number + endxPathState, "idle");
+            _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "idle");
+            _agent->changeData(startxPath + _number + endxPathIncNumb);
+        }
+    }
+}
+
+void MobileClient::endCall()
+{
+    if(_abbonentB.empty())
+    {
+        std::map<std::string, std::string> data;
+        _agent->fetchData(startxPath + _number + endxPathState, data);
+        _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
+        if(data[startxPath + _number + endxPathState] == "busy")
+        {
+            _agent->changeData(startxPath + _number + endxPathState, "idle");
+            _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "idle");
+            _agent->changeData(startxPath + _number + endxPathIncNumb);
+        }
+    }
+    else
+    {
+        _agent->changeData(startxPath + _number + endxPathState, "idle");
+        _agent->changeData(startxPath + _abbonentB + endxPathState, "idle");
+        _agent->changeData(startxPath + _abbonentB + endxPathIncNumb);
+        _abbonentB = "";
+    }
+}
+
+void MobileClient::unregister()
+{
+    std::map<std::string, std::string> data;
+    _agent->fetchData(startxPath + _number + endxPathState, data);
+    if(data[startxPath + _number + endxPathState] == "idle")
+    {
+        _agent->changeData(startxPath + _number + endxPathState);
+        _agent->changeData(startxPath + _number + endxPath);
+        _register = false;
+    }
+}
 
 

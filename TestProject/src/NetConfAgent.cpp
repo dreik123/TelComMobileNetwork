@@ -198,3 +198,10 @@ bool NetConfAgent::changeData(const std::string& xpath, const std::string& value
     _sess->apply_changes();
     return true;
 }
+
+bool NetConfAgent::changeData(const std::string& xpath)
+{
+    _sess->delete_item(xpath.c_str());
+    _sess->apply_changes();
+    return true;
+}

@@ -5,11 +5,13 @@ class MobileClient {
 public:
     MobileClient();
     bool registerClient(const std::string& number);
+    bool isRegister();
     void setName(const std::string& name);
     void call(const std::string& number);
     void answer();
     void reject();
     void endCall();
+    void unregister();
     void handleModuleChange();
     void handleOperData();
 private:
