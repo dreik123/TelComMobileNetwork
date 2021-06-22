@@ -35,7 +35,7 @@ int main()
             commandArgs.push_back(arg);
         }
 
-        if(isFind("register", commandArgs.at(0)))
+        if(isFind("register", commandArgs.at(0)) && !client.isRegister())
         {
             if(commandArgs.size() > 1)
             {
