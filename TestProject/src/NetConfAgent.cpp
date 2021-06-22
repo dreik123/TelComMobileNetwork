@@ -67,38 +67,7 @@ print_change(sysrepo::S_Change change) {
     }
 }
 
-/* Function to print current configuration state.
- * It does so by loading all the items of a session and printing them out. */
-static void
-print_current_config(sysrepo::S_Session session, const char *module_name)
-{
-    char select_xpath[MAX_LEN];
-    try {
-        snprintf(select_xpath, MAX_LEN, "/%s:*//*", module_name);
 
-        auto values = session->get_items(&select_xpath[0]);
-        if (values == nullptr)
-            return;
-
-        for(unsigned int i = 0; i < values->val_cnt(); i++)
-            cout << values->val(i)->to_string();
-    } catch( const std::exception& e ) {
-        cout << e.what() << endl;
-    }
-}
-
-/* Helper function for printing events. */
-const char *ev_to_str(sr_event_t ev) {
-    switch (ev) {
-    case SR_EV_CHANGE:
-        return "change";
-    case SR_EV_DONE:
-        return "done";
-    case SR_EV_ABORT:
-    default:
-        return "abort";
-    }
-}
 
 bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std::string& xpath, MobileClient& client)
 {
@@ -110,17 +79,12 @@ bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std
         {
             if (SR_EV_DONE == event)
             {
-
-                cout << "\n\n ========== CHANGES: =============================================\n" << endl;
-
                 snprintf(change_path, MAX_LEN, "/%s:*//.", module_name);
-
                 auto it = sess->get_changes_iter(change_path);
-
                 while (auto change = sess->get_change_next(it)) {
-                    print_change(change);
+                    //print_change(change);
+                    client.handleModuleChange(change);
                 }
-                cout << "\n\n ========== END OF CHANGES =======================================\n" << endl;
             }
 
 
@@ -128,7 +92,6 @@ bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std
         }catch( const std::exception& e ) {
                 cout << e.what() << endl;
             }
-            client.handleModuleChange();
             return SR_ERR_OK;
                 
     };    
@@ -143,15 +106,7 @@ bool NetConfAgent::registerOperData(const std::string& module, const std::string
     {
         libyang::S_Context ctx = session->get_context();
         libyang::S_Module mod = ctx->get_module(module_name);
-        client.handleOperData();
-        for(auto &d: data)
-        {
-            parent->new_path(ctx, d.first.c_str(), d.second.c_str(), LYD_ANYDATA_CONSTSTRING, 0);
-        }
-        
-        /*auto subscribers = std::make_shared<libyang::Data_Node>(parent, mod, "subscribers");
-        auto number = std::make_shared<libyang::Data_Node>(subscribers, mod, "number", "+380877676678");
-        auto userName = std::make_shared<libyang::Data_Node>(subscribers, mod, "userName", "bob");*/
+        client.handleOperData(ctx, parent, data);
         return SR_ERR_OK;
     };
 

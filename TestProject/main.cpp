@@ -65,18 +65,20 @@ int main()
                 std::cout << "Invalid command. Must be \"name [arg1]\" " << std::endl;
             }
         }
-
-        if(client.isRegister())
+        else if(isFind("exit", commandArgs.at(0)))
         {
-            if(isFind("unregister", commandArgs.at(0)))
+            std::cout << "exit programm" << std::endl;
+            break;
+        }
+        else if(isFind("unregister", commandArgs.at(0)) && client.isRegister())
             {
-                std::cout << "unregistered" << std::endl;
+                client.unregister();
             }
-            else if(isFind("callEnd", commandArgs.at(0)))
+            else if(isFind("callEnd", commandArgs.at(0)) && client.isRegister())
             {
-                std::cout << "end call" << std::endl;
+                client.endCall();
             }
-            else if(isFind("call", commandArgs.at(0)))
+            else if(isFind("call", commandArgs.at(0)) && client.isRegister())
             {
                 if(commandArgs.size() > 1)
                 {
@@ -94,24 +96,18 @@ int main()
                     std::cout << "Invalid command. Must be \"call [arg1]\" " << std::endl;
                 }
             }
-            else if(isFind("answer", commandArgs.at(0)))
+            else if(isFind("answer", commandArgs.at(0)) && client.isRegister())
             {
-                std::cout << "answered call" << std::endl;
+                client.answer();
             }
-            else if(isFind("reject", commandArgs.at(0)))
+            else if(isFind("reject", commandArgs.at(0)) && client.isRegister())
             {
-                std::cout << "rejected call" << std::endl;
-            }
-            else if(isFind("exit", commandArgs.at(0)))
-            {
-                std::cout << "exit programm" << std::endl;
-                break;
+                client.reject();
             }
             else 
             {
                 std::cout << "invalid operation" << std::endl;
             }
-        }
 
         
         

@@ -12,8 +12,8 @@ public:
     void reject();
     void endCall();
     void unregister();
-    void handleModuleChange();
-    void handleOperData();
+    void handleModuleChange(sysrepo::S_Change change);
+    void handleOperData(libyang::S_Context& ctx, libyang::S_Data_Node &parent, const std::map<std::string, std::string>& data);
 private:
     std::shared_ptr<NetConfAgent> _agent;
     std::string _userName;
