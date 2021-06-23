@@ -55,59 +55,39 @@ bool MobileClient::isCall()
 
 void MobileClient::handleModuleChange(sysrepo::S_Change change)
 {
-    switch(change->oper())
+
+    if (nullptr != change->new_val()) 
     {
-        case SR_OP_CREATED:
+        std::string xpath = change->new_val()->to_string();
+        if(xpath.find("state") != -1 && nullptr != change->old_val())
+        {
+            std::string newState(change->new_val()->data()->get_enum());
+            std::string oldState(change->old_val()->data()->get_enum());
+
+            if(newState == "idle" && oldState == "active")
+            {
+                _call = false;
+                std::cout << "Call rejected" << std::endl;
+            }
+            else if(newState == "idle" && oldState == "busy")
+            {
+                _call = false;
+                std::cout << "Ended call" << std::endl;
+            }
+            else if(newState == "busy" && oldState == "active")
+            {
+                std::cout << "Start call" << std::endl;
+            }
+            else if(newState == "active" && oldState == "idle" && !_abbonentB.empty())
+            {
+                _call = true;
+                std::cout << "You are calling" << std::endl;
+            }
+        }
+        else if (xpath.find("incomingNumber") != -1) 
         {
             _call = true;
-            if (nullptr != change->new_val()) 
-            {
-                std::cout << std::string(change->new_val()->data()->get_string()) << " is calling [answer/reject]" << std::endl;
-            }
-            break;
-        }
-        case SR_OP_MODIFIED:
-        {
-            if (nullptr != change->new_val() && nullptr != change->old_val()) 
-            {
-                std::string xpath = change->new_val()->to_string();
-                //auto regex = std::regex("state");
-                //if(std::regex_match(std::string(xpath), regex))
-                //{
-                    std::string newState(change->new_val()->data()->get_enum());
-                    std::string oldState(change->old_val()->data()->get_enum());
-                    if(newState == "idle" && oldState == "active" && !_abbonentB.empty())
-                    {
-                        _call = false;
-                        std::cout << _abbonentB << " rejected call" << std::endl;
-                        _abbonentB = "";
-                    }
-                    else if(newState == "idle" && oldState == "active")
-                    {
-                        _call = false;
-                        std::cout << "You rejected call" << std::endl;
-                    }
-                    else if(newState == "idle" && oldState == "busy")
-                    {
-                        _call = false;
-                        std::cout << "Ended call" << std::endl;
-                    }
-                    else if(newState == "busy" && oldState == "active")
-                    {
-                        _call = true;
-                        std::cout << "Start call" << std::endl;
-                    }
-                //}
-            }
-            break;
-        }
-        case SR_OP_DELETED:
-        {
-            break;
-        }
-        default:
-        {
-            break;
+            std::cout << std::string(change->new_val()->data()->get_string()) << " is calling [answer/reject]" << std::endl;
         }
     }
 }
@@ -189,6 +169,8 @@ void MobileClient::answer()
             _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
             _agent->changeData(startxPath + _number + endxPathState, "busy");
             _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "busy");
+
+                       
         }
     }
     else
@@ -230,7 +212,8 @@ void MobileClient::reject()
         {
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathState, "idle");
-            _agent->changeData(startxPath + _number + endxPathIncNumb);
+            _agent->changeData(startxPath + _abbonentB + endxPathIncNumb);
+            _abbonentB = "";
         }
     }
 }
