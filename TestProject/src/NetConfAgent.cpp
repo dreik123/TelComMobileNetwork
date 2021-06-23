@@ -17,72 +17,36 @@ bool NetConfAgent::initSysrepo()
 
 bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std::string>& res)
 {
-    auto values = _sess->get_item(xpath.c_str());
-    if (values == nullptr)
-        return false;
+    try {
+        auto values = _sess->get_item(xpath.c_str());
+        if (values == nullptr)
+            return false;
 
-    res.insert(std::pair<std::string, std::string>(std::string(values->xpath()), 
-    std::string(values->val_to_string())));
+        res.insert(std::pair<std::string, std::string>(std::string(values->xpath()), 
+        std::string(values->val_to_string())));
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
+    
             
     return true;
 }
-#define MAX_LEN 100
-static void
-print_change(sysrepo::S_Change change) {
-    cout << endl;
-    switch(change->oper()) {
-    case SR_OP_CREATED:
-        if (nullptr != change->new_val()) {
-           cout <<"CREATED: ";
-           cout << change->new_val()->to_string();
-        }
-        break;
-    case SR_OP_DELETED:
-        if (nullptr != change->old_val()) {
-           cout << "DELETED: ";
-           cout << change->old_val()->to_string();
-        }
-    break;
-    case SR_OP_MODIFIED:
-        if (nullptr != change->old_val() && nullptr != change->new_val()) {
-           cout << "MODIFIED: ";
-           cout << "old value ";
-           cout << change->old_val()->to_string();
-           cout << "new value ";
-           cout << change->new_val()->to_string();
-        }
-    break;
-    case SR_OP_MOVED:
-        if (nullptr != change->old_val() && nullptr != change->new_val()) {
-           cout << "MOVED: ";
-           cout << change->new_val()->xpath();
-           cout << " after ";
-           cout << change->old_val()->xpath();
-        } else if (nullptr != change->new_val()) {
-           cout << "MOVED: ";
-           cout << change->new_val()->xpath();
-           cout << " first";
-        }
-    break;
-    }
-}
-
-
 
 bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std::string& xpath, MobileClient& client)
 {
     auto cb = [&client] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
     uint32_t request_id) 
     {
-        char change_path[MAX_LEN];
+        char change_path[100];
         try
         {
             if (SR_EV_DONE == event)
             {
-                snprintf(change_path, MAX_LEN, "/%s:*//.", module_name);
+                snprintf(change_path, 100, "/%s:*//.", module_name);
                 auto it = sess->get_changes_iter(change_path);
                 while (auto change = sess->get_change_next(it)) {
-                    //print_change(change);
                     client.handleModuleChange(change);
                 }
             }

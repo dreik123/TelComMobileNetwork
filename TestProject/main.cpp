@@ -70,15 +70,15 @@ int main()
             std::cout << "exit programm" << std::endl;
             break;
         }
-        else if(isFind("unregister", commandArgs.at(0)) && client.isRegister())
+        else if(isFind("unregister", commandArgs.at(0)))
             {
                 client.unregister();
             }
-            else if(isFind("callEnd", commandArgs.at(0)) && client.isRegister())
+            else if(isFind("callEnd", commandArgs.at(0)))
             {
                 client.endCall();
             }
-            else if(isFind("call", commandArgs.at(0)) && client.isRegister())
+            else if(isFind("call", commandArgs.at(0)))
             {
                 if(commandArgs.size() > 1)
                 {
@@ -96,14 +96,19 @@ int main()
                     std::cout << "Invalid command. Must be \"call [arg1]\" " << std::endl;
                 }
             }
-            else if(isFind("answer", commandArgs.at(0)) && client.isRegister())
+            else if(isFind("answer", commandArgs.at(0)))
             {
                 client.answer();
             }
-            else if(isFind("reject", commandArgs.at(0)) && client.isRegister())
+            else if(isFind("reject", commandArgs.at(0)))
             {
                 client.reject();
             }
+            /*else if(isFind("unregister", commandArgs.at(0)) && commandArgs.size() > 1)
+            {
+                client.unregister(commandArgs.at(1));
+            }*/
+
             else 
             {
                 std::cout << "invalid operation" << std::endl;
