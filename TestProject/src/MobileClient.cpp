@@ -102,7 +102,14 @@ void MobileClient::handleOperData(libyang::S_Context& ctx, libyang::S_Data_Node 
 
 void MobileClient::setName(const std::string& name)
 {
-    _userName = name;
+    if(!isRegister())
+    {
+        _userName = name;
+    }
+    else
+    {
+        std::cout << "You aren't change name, because you registered" << std::endl;
+    }
 }
 
 void MobileClient::call(const std::string& number)
@@ -115,6 +122,7 @@ void MobileClient::call(const std::string& number)
     if(isCall())
     {
         std::cout << "You are calling another person" << std::endl;
+        return;
     }
 
     if(number != _number)
@@ -168,9 +176,7 @@ void MobileClient::answer()
         {
             _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
             _agent->changeData(startxPath + _number + endxPathState, "busy");
-            _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "busy");
-
-                       
+            _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "busy");         
         }
     }
     else
@@ -213,7 +219,7 @@ void MobileClient::reject()
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathIncNumb);
-            _abbonentB = "";
+            _abbonentB.clear();
         }
     }
 }
@@ -246,8 +252,7 @@ void MobileClient::endCall()
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathIncNumb);
-            _abbonentB = "";
-            
+            _abbonentB.clear();
         }
     }
 }
@@ -264,16 +269,10 @@ void MobileClient::unregister()
         std::cout << "You are calling" << std::endl;
         return;
     }
-    std::map<std::string, std::string> data;
-    _agent->fetchData(startxPath + _number + endxPathState, data);
-    if(data[startxPath + _number + endxPathState] == "idle")
-    {
-        //_agent->changeData(startxPath + _number + endxPathState);
-        _agent->changeData(startxPath + _number + endxPath);
-        _register = false;
-        _userName = "";
-        _number = "";
-    }
+    _agent->changeData(startxPath + _number + endxPath);
+    _register = false;
+    _userName.clear();
+    _number.clear();
 }
 // Debug function
 void MobileClient::unregister(const std::string& number)
