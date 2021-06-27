@@ -52,10 +52,12 @@ public:
     /**
      * Modifies or creates the requested data
      * \param[in] xpath Path to change data
-     * \param[in] values Value to change data
+     * \param[in] value Value to change data
      * */
     bool changeData(const std::string& xpath, const std::string& value);
-    bool changeData(const std::string& xpath);
+
+    bool deleteData(const std::string& xpath);
+    bool deleteData(const std::string& xpath, const std::string& xpathUserName);
 private:
     std::shared_ptr<sysrepo::Session> _sess; /**< sysrepo session */
     std::shared_ptr<sysrepo::Connection> _conn; /**< sysrepo connection */

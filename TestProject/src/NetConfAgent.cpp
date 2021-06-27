@@ -34,6 +34,7 @@ bool NetConfAgent::fetchData(const std::string& xpath, std::map<std::string, std
     return true;
 }
 
+
 bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std::string& xpath, MobileClient& client)
 {
     auto cb = [&client] (sysrepo::S_Session sess, const char *module_name, const char *xpath, sr_event_t event,
@@ -118,7 +119,7 @@ bool NetConfAgent::changeData(const std::string& xpath, const std::string& value
     return true;
 }
 
-bool NetConfAgent::changeData(const std::string& xpath)
+bool NetConfAgent::deleteData(const std::string& xpath)
 {
     _sess->delete_item(xpath.c_str());
     _sess->apply_changes();
