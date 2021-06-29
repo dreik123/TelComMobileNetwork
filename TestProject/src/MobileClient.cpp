@@ -28,13 +28,21 @@ bool MobileClient::registerClient(const std::string& number)
     }
     if(!_userName.empty())
     {
-        _register = true;
-        _number = number;
-        std::string xpath = startxPath + _number + endxPath;
-        std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
-        _agent->changeData(startxPath + _number + endxPathState, "idle");
-        //_agent->registerOperData(moduleName, xpath, userName, *this);
-        _agent->subscribeForModelChanges(moduleName, xpath, *this);
+        std::map<std::string, std::string> data;
+        if(!_agent->fetchData(startxPath + number + endxPathState, data))
+        {
+            _register = true;
+            _number = number;
+            std::string xpath = startxPath + _number + endxPath;
+            std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
+            _agent->changeData(startxPath + _number + endxPathState, "idle");
+            //_agent->registerOperData(moduleName, xpath, userName, *this);
+            _agent->subscribeForModelChanges(moduleName, xpath, *this);
+        }
+        else
+        {
+            std::cout << "Change number" << std::endl;
+        }
     }
     else
     {
@@ -278,9 +286,9 @@ void MobileClient::unregister()
     _number.clear();
 }
 // Debug function
-void MobileClient::unregister(const std::string& number)
+/*void MobileClient::unregister(const std::string& number)
 {
     _agent->deleteData(startxPath + number + endxPath);
-}
+}*/
 
 
