@@ -13,6 +13,7 @@ public:
      * Constructor initializes private fields of the class
      * */
     MobileClient();
+    MobileClient(std::unique_ptr<NetConfAgent> agent);
     /**
      * Register client number in sysrepo
      * @param number number for register
@@ -63,7 +64,7 @@ public:
      * */
     void handleOperData(libyang::S_Context& ctx, libyang::S_Data_Node &parent, const std::map<std::string, std::string>& data);
 private:
-    std::shared_ptr<NetConfAgent> _agent; /**< field for connection with NetConfAgent class */
+    std::unique_ptr<NetConfAgent> _agent; /**< field for connection with NetConfAgent class */
     std::string _userName; /**< name client */
     std::string _number; /**< number client */
     bool _register; /**< is register client */

@@ -2,9 +2,14 @@
 #include <string>
 #include <regex>
 
-MobileClient::MobileClient()
+MobileClient::MobileClient() :
+MobileClient(std::make_unique<NetConfAgent>())
 {
-    _agent = std::make_shared<NetConfAgent>();
+
+}
+MobileClient::MobileClient(std::unique_ptr<NetConfAgent> agent)
+{
+    _agent = std::move(agent);
     _agent->initSysrepo();
     _register = false;
     _call = false;
@@ -36,7 +41,7 @@ bool MobileClient::registerClient(const std::string& number)
             std::string xpath = startxPath + _number + endxPath;
             std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
             _agent->changeData(startxPath + _number + endxPathState, "idle");
-            //_agent->registerOperData(moduleName, xpath, userName, *this);
+            _agent->registerOperData(moduleName, xpath, userName, *this);
             _agent->subscribeForModelChanges(moduleName, xpath, *this);
         }
         else
