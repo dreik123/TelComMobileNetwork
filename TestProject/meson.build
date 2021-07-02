@@ -7,6 +7,7 @@ sysrepo = dependency('sysrepo')
 sysrepo_cpp = dependency('sysrepo-cpp')
 libyang = dependency('libyang-cpp')
 subdir('src')
+subdir('test')
 exe = executable('MobileNetwork', 
 sources : 'main.cpp',
 dependencies : [sysrepo, sysrepo_cpp, libyang, my_dep], 

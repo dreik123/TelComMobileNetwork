@@ -2,9 +2,14 @@
 #include <string>
 #include <regex>
 
-MobileClient::MobileClient()
+MobileClient::MobileClient() :
+MobileClient(std::make_unique<NetConfAgent>())
 {
-    _agent = std::make_shared<NetConfAgent>();
+
+}
+MobileClient::MobileClient(std::unique_ptr<NetConfAgent> agent)
+{
+    _agent = std::move(agent);
     _agent->initSysrepo();
     _register = false;
     _call = false;
@@ -28,13 +33,22 @@ bool MobileClient::registerClient(const std::string& number)
     }
     if(!_userName.empty())
     {
-        _register = true;
-        _number = number;
-        std::string xpath = startxPath + _number + endxPath;
-        std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
-        _agent->changeData(startxPath + _number + endxPathState, "idle");
-        //_agent->registerOperData(moduleName, xpath, userName, *this);
-        _agent->subscribeForModelChanges(moduleName, xpath, *this);
+        std::map<std::string, std::string> data;
+        if(!_agent->fetchData(startxPath + number + endxPathState, data))
+        {
+            
+            _register = true;
+            _number = number;
+            std::string xpath = startxPath + _number + endxPath;
+            std::map<std::string, std::string> userName = {{startxPath + _number + endxPathUserName, _userName}};
+            _agent->changeData(startxPath + _number + endxPathState, "idle");
+            _agent->registerOperData(moduleName, xpath, userName, *this);
+            _agent->subscribeForModelChanges(moduleName, xpath, *this);
+        }
+        else
+        {
+            std::cout << "Change number" << std::endl;
+        }
     }
     else
     {
@@ -52,7 +66,36 @@ bool MobileClient::isCall()
 {
     return _call;
 }
-
+void MobileClient::handleModuleChange(const std::string& xpath, const std::string& newVal, const std::string& oldVal)
+{
+        if(xpath.find("state") != -1 && !oldVal.empty())
+        {
+            if(newVal == "idle" && oldVal == "active")
+            {
+                _call = false;
+                std::cout << "Call rejected" << std::endl;
+            }
+            else if(newVal == "idle" && oldVal == "busy")
+            {
+                _call = false;
+                std::cout << "Ended call" << std::endl;
+            }
+            else if(newVal == "busy" && oldVal == "active")
+            {
+                std::cout << "Start call" << std::endl;
+            }
+            else if(newVal == "active" && oldVal == "idle" && !_abbonentB.empty())
+            {
+                _call = true;
+                std::cout << "You are calling" << std::endl;
+            }
+        }
+        else if (xpath.find("incomingNumber") != -1) 
+        {
+            _call = true;
+            std::cout << newVal << " is calling [answer/reject]" << std::endl;
+        }
+}
 void MobileClient::handleModuleChange(sysrepo::S_Change change)
 {
 
@@ -278,9 +321,9 @@ void MobileClient::unregister()
     _number.clear();
 }
 // Debug function
-void MobileClient::unregister(const std::string& number)
+/*void MobileClient::unregister(const std::string& number)
 {
     _agent->deleteData(startxPath + number + endxPath);
-}
+}*/
 
 

@@ -7,11 +7,21 @@
 #include "MobileClient.hpp"
 using std::cout;
 using std::endl;
+NetConfAgent::~NetConfAgent()
+{
+
+}
 bool NetConfAgent::initSysrepo()
 {
-    _conn = std::make_shared<sysrepo::Connection>();
-    _sess = std::make_shared<sysrepo::Session>(_conn);
-    _subscribe = std::make_shared<sysrepo::Subscribe>(_sess);
+    try {
+        _conn = std::make_shared<sysrepo::Connection>();
+        _sess = std::make_shared<sysrepo::Session>(_conn);
+        _subscribe = std::make_shared<sysrepo::Subscribe>(_sess);
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
     return true;
 }
 
@@ -47,16 +57,33 @@ bool NetConfAgent::subscribeForModelChanges(const std::string& module, const std
             {
                 snprintf(change_path, 100, "/%s:*//.", module_name);
                 auto it = sess->get_changes_iter(change_path);
-                while (auto change = sess->get_change_next(it)) {
-                    client.handleModuleChange(change);
+                while (auto change = sess->get_change_next(it)) 
+                {
+                    if (nullptr != change->new_val()) 
+                    {
+                        std::string xpath = change->new_val()->to_string();
+                        std::string newVal("");
+                        std::string oldVal("");
+                        if(xpath.find("state") != -1 && nullptr != change->old_val())
+                        {
+                            newVal = change->new_val()->data()->get_enum();
+                            oldVal = change->old_val()->data()->get_enum();
+                        }
+                        else if (xpath.find("incomingNumber") != -1) 
+                        {
+                            newVal = change->new_val()->data()->get_string();
+                        }
+
+
+                        client.handleModuleChange(xpath, newVal, oldVal);
+                    }
                 }
             }
-
-
-                
-        }catch( const std::exception& e ) {
-                cout << e.what() << endl;
-            }
+        } 
+        catch(const std::exception& e) 
+        {
+            cout << e.what() << endl;
+        }
             return SR_ERR_OK;
                 
     };    

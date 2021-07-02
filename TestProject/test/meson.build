@@ -1,0 +1,7 @@
+gtest_dep = dependency('gtest', main: true, required: false)
+gmock_dep = dependency('gmock', required: true)
+sysrepo = dependency('sysrepo')
+sysrepo_cpp = dependency('sysrepo-cpp')
+libyang = dependency('libyang-cpp')
+e = executable('testprog', 'MobileClientTest.cpp', dependencies: [gtest_dep, gmock_dep, my_dep, sysrepo, sysrepo_cpp, libyang])
+test('gtest test', e)
