@@ -7,11 +7,21 @@
 #include "MobileClient.hpp"
 using std::cout;
 using std::endl;
+NetConfAgent::~NetConfAgent()
+{
+
+}
 bool NetConfAgent::initSysrepo()
 {
-    _conn = std::make_shared<sysrepo::Connection>();
-    _sess = std::make_shared<sysrepo::Session>(_conn);
-    _subscribe = std::make_shared<sysrepo::Subscribe>(_sess);
+    try {
+        _conn = std::make_shared<sysrepo::Connection>();
+        _sess = std::make_shared<sysrepo::Session>(_conn);
+        _subscribe = std::make_shared<sysrepo::Subscribe>(_sess);
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
     return true;
 }
 

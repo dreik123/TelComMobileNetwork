@@ -36,6 +36,7 @@ bool MobileClient::registerClient(const std::string& number)
         std::map<std::string, std::string> data;
         if(!_agent->fetchData(startxPath + number + endxPathState, data))
         {
+            
             _register = true;
             _number = number;
             std::string xpath = startxPath + _number + endxPath;
