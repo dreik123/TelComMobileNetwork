@@ -58,6 +58,7 @@ public:
      * Method called from NetConfAgent class on model changes
      * @param change changes in model
      * */
+    void handleModuleChange(const std::string& xpath, const std::string& newVal, const std::string& oldVal);
     void handleModuleChange(sysrepo::S_Change change);
     /**
      * Method called from NetConfAgent class on fetch operational data

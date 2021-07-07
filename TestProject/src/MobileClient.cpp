@@ -66,7 +66,36 @@ bool MobileClient::isCall()
 {
     return _call;
 }
-
+void MobileClient::handleModuleChange(const std::string& xpath, const std::string& newVal, const std::string& oldVal)
+{
+        if(xpath.find("state") != -1 && !oldVal.empty())
+        {
+            if(newVal == "idle" && oldVal == "active")
+            {
+                _call = false;
+                std::cout << "Call rejected" << std::endl;
+            }
+            else if(newVal == "idle" && oldVal == "busy")
+            {
+                _call = false;
+                std::cout << "Ended call" << std::endl;
+            }
+            else if(newVal == "busy" && oldVal == "active")
+            {
+                std::cout << "Start call" << std::endl;
+            }
+            else if(newVal == "active" && oldVal == "idle" && !_abbonentB.empty())
+            {
+                _call = true;
+                std::cout << "You are calling" << std::endl;
+            }
+        }
+        else if (xpath.find("incomingNumber") != -1) 
+        {
+            _call = true;
+            std::cout << newVal << " is calling [answer/reject]" << std::endl;
+        }
+}
 void MobileClient::handleModuleChange(sysrepo::S_Change change)
 {
 
