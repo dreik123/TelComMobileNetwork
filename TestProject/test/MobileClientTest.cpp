@@ -45,7 +45,7 @@ TEST_F(MobileClientTest, shouldSuccedToRegister)
     std::map<std::string, std::string> data {{startxPath + number1 + endxPathUserName, userName}};
     std::map<std::string, std::string> data2;
     EXPECT_EQ(_mobileClient->isRegister(), false);
-    EXPECT_CALL(*_mock, fetchData(startxPath + number1 + endxPathState, data2)).WillOnce(Return(true));
+    EXPECT_CALL(*_mock, fetchData(startxPath + number1 + endxPath, data2)).WillOnce(Return(false));
     EXPECT_CALL(*_mock, changeData(startxPath + number1 + endxPathState, stateIdle)).WillOnce(Return(true));
     EXPECT_CALL(*_mock, registerOperData(moduleName, startxPath + number1 + endxPath, data, _)).WillOnce(Return(true));
     EXPECT_CALL(*_mock, subscribeForModelChanges(moduleName, startxPath + number1 + endxPath, _)).WillOnce(Return(true));
@@ -54,6 +54,72 @@ TEST_F(MobileClientTest, shouldSuccedToRegister)
 
 }
 
+TEST_F(MobileClientTest, shouldFailedToRegister)
+{
+    
+    _mobileClient->setName(userName);   
+    //_mobileClient->isRegister();
+    std::map<std::string, std::string> data {{startxPath + number1 + endxPathUserName, userName}};
+    std::map<std::string, std::string> data2;
+    EXPECT_EQ(_mobileClient->isRegister(), false);
+    EXPECT_CALL(*_mock, fetchData(startxPath + number1 + endxPath, data2)).WillOnce(Return(false));
+    EXPECT_CALL(*_mock, changeData(startxPath + number1 + endxPathState, stateIdle)).WillOnce(Return(true));
+    EXPECT_CALL(*_mock, registerOperData(moduleName, startxPath + number1 + endxPath, data, _)).WillOnce(Return(true));
+    EXPECT_CALL(*_mock, subscribeForModelChanges(moduleName, startxPath + number1 + endxPath, _)).WillOnce(Return(true));
+    _mobileClient->registerClient(number1);
+    EXPECT_EQ(_mobileClient->isRegister(), true);
+    _mobileClient->registerClient(number1);
+    
+
+}
+
+TEST_F(MobileClientTest, shouldChangeNumberToRegister)
+{
+    
+    _mobileClient->setName(userName);   
+    //_mobileClient->isRegister();
+    std::map<std::string, std::string> data {{startxPath + number1 + endxPathUserName, userName}};
+    std::map<std::string, std::string> data2;
+    EXPECT_EQ(_mobileClient->isRegister(), false);
+    EXPECT_CALL(*_mock, fetchData(startxPath + number1 + endxPath, data2)).WillOnce(Return(true));
+    _mobileClient->registerClient(number1);
+    
+}
+
+/*TEST_F(MobileClientTest, handleModuleChangesStateIdleActive)
+{
+    std::string xpath = startxPath + number1 + endxPathState;
+    EXPECT_FALSE(_mobileClient->isCall());
+    _mobileClient->handleModuleChange(xpath, "idle", "active");
+}
+
+TEST_F(MobileClientTest, handleModuleChangesStateIdleBusy)
+{
+    std::string xpath = startxPath + number1 + endxPathState;
+    EXPECT_FALSE(_mobileClient->isCall());
+    _mobileClient->handleModuleChange(xpath, "idle", "busy");
+}
+
+TEST_F(MobileClientTest, handleModuleChangesStateBusyActive)
+{
+    std::string xpath = startxPath + number1 + endxPathState;
+    EXPECT_TRUE(_mobileClient->isCall());
+    _mobileClient->handleModuleChange(xpath, "busy", "active");
+}
+
+TEST_F(MobileClientTest, handleModuleChangesStateActiveIdle)
+{
+    std::string xpath = startxPath + number1 + endxPathState;
+    EXPECT_TRUE(_mobileClient->isCall());
+    _mobileClient->handleModuleChange(xpath, "active", "idle");
+}
+
+TEST_F(MobileClientTest, handleModuleChangesIncomingNumber)
+{
+    std::string xpath = startxPath + number1 + endxPathIncNumb;
+    EXPECT_TRUE(_mobileClient->isCall());
+    _mobileClient->handleModuleChange(xpath, number2, "");
+}*/
 /*TEST_F(MobileClientTest, shouldSuccedToCall)
 {
         
