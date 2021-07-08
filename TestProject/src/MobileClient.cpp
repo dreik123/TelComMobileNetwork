@@ -34,7 +34,7 @@ bool MobileClient::registerClient(const std::string& number)
     if(!_userName.empty())
     {
         std::map<std::string, std::string> data;
-        if(!_agent->fetchData(startxPath + number + endxPathState, data))
+        if(!_agent->fetchData(startxPath + number + endxPath, data))
         {
             
             _register = true;
