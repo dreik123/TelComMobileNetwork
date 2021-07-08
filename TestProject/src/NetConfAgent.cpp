@@ -146,9 +146,23 @@ bool NetConfAgent::changeData(const std::string& xpath, const std::string& value
     return true;
 }
 
-bool NetConfAgent::deleteData(const std::string& xpath)
+/*bool NetConfAgent::deleteData(const std::string& xpath)
 {
     _sess->delete_item(xpath.c_str());
     _sess->apply_changes();
     return true;
+}*/
+
+bool NetConfAgent::deleteData(const std::string& xpath, bool isUnregister)
+{
+    if(isUnregister)
+    {
+        _conn = std::make_shared<sysrepo::Connection>();
+        _sess = std::make_shared<sysrepo::Session>(_conn);
+        _subscribe = std::make_shared<sysrepo::Subscribe>(_sess);
+    }
+    _sess->delete_item(xpath.c_str());
+    _sess->apply_changes();
+    return true;
 }
+

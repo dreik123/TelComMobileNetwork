@@ -96,7 +96,7 @@ void MobileClient::handleModuleChange(const std::string& xpath, const std::strin
             std::cout << newVal << " is calling [answer/reject]" << std::endl;
         }
 }
-void MobileClient::handleModuleChange(sysrepo::S_Change change)
+/*void MobileClient::handleModuleChange(sysrepo::S_Change change)
 {
 
     if (nullptr != change->new_val()) 
@@ -133,7 +133,7 @@ void MobileClient::handleModuleChange(sysrepo::S_Change change)
             std::cout << std::string(change->new_val()->data()->get_string()) << " is calling [answer/reject]" << std::endl;
         }
     }
-}
+}*/
 
 void MobileClient::handleOperData(libyang::S_Context& ctx, libyang::S_Data_Node &parent, const std::map<std::string, std::string>& data)
 {
@@ -253,7 +253,7 @@ void MobileClient::reject()
             _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "idle");
-            _agent->deleteData(startxPath + _number + endxPathIncNumb);
+            _agent->deleteData(startxPath + _number + endxPathIncNumb, false);
         }
     }
     else
@@ -264,7 +264,7 @@ void MobileClient::reject()
         {
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathState, "idle");
-            _agent->deleteData(startxPath + _abbonentB + endxPathIncNumb);
+            _agent->deleteData(startxPath + _abbonentB + endxPathIncNumb, false);
             _abbonentB.clear();
         }
     }
@@ -291,13 +291,13 @@ void MobileClient::endCall()
             _agent->fetchData(startxPath + _number + endxPathIncNumb, data);
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + data[startxPath + _number + endxPathIncNumb] + endxPathState, "idle");
-            _agent->deleteData(startxPath + _number + endxPathIncNumb);
+            _agent->deleteData(startxPath + _number + endxPathIncNumb, false);
         }
         else
         {
             _agent->changeData(startxPath + _number + endxPathState, "idle");
             _agent->changeData(startxPath + _abbonentB + endxPathState, "idle");
-            _agent->deleteData(startxPath + _abbonentB + endxPathIncNumb);
+            _agent->deleteData(startxPath + _abbonentB + endxPathIncNumb, false);
             _abbonentB.clear();
         }
     }
@@ -315,7 +315,7 @@ void MobileClient::unregister()
         std::cout << "You are calling" << std::endl;
         return;
     }
-    _agent->deleteData(startxPath + _number + endxPath);
+    _agent->deleteData(startxPath + _number + endxPath, true);
     _register = false;
     _userName.clear();
     _number.clear();

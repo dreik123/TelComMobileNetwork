@@ -61,7 +61,7 @@ public:
      * Deletes the requested data
      * \param[in] xpath Path to deleting data
      * */
-    virtual bool deleteData(const std::string& xpath);
+    virtual bool deleteData(const std::string& xpath, bool isUnregister);
 private:
     std::shared_ptr<sysrepo::Session> _sess; /**< sysrepo session */
     std::shared_ptr<sysrepo::Connection> _conn; /**< sysrepo connection */

@@ -15,5 +15,5 @@ public:
     MOCK_METHOD(bool, subscribeForRpc, ((const std::string& xpath), (const std::map<std::string, std::string>& output_val_for_rpc)), (override));
     MOCK_METHOD(bool, notifySysrepo, ((const std::string& xpath), (const std::map<std::string, std::string>& values)), (override));
     MOCK_METHOD(bool, changeData, ((const std::string& xpath), (const std::string& value)), (override));
-    MOCK_METHOD(bool, deleteData, ((const std::string& xpath)), (override));
+    MOCK_METHOD(bool, deleteData, ((const std::string& xpath), (bool isUnregister)), (override));
 };
